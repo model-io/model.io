@@ -16,5 +16,9 @@
     "websockets"
   ],
   "author": "Stephan Hoyer",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "~3.8.5",
+    "mongoose-schema-extend": "~0.1.7"
+  }
 }
