@@ -55,10 +55,9 @@ ModelIOSchema.statics.findWithUser = function(user, conditions, fields, options,
 }
 
 function pick(entity, attributes) {
-  attributes = _.union(attributes, DEFAULT_ATTRIBUTES);
   entity._doc = _.contains(attributes, '*')
     ? _.omit(entity._doc, INTERNAL_ATTRIBUTES)
-    : _.pick(entity._doc, attributes);
+    : _.pick(entity._doc, _.union(attributes, DEFAULT_ATTRIBUTES));
   return entity;
 }
 
