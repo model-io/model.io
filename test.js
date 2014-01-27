@@ -97,11 +97,11 @@ describe('modelio', function(){
         dogs.forEach(function(dog) {
           expect(dog).to.be.a(Dog);
           if (dog._owner == you.id) {
-            expect(dog).to.have.property('name');
-            expect(dog).to.have.property('color');
+            expect(dog.name).to.be('Dolly');
+            expect(dog.color).to.be('black');
           } else {
             expect(dog.name).to.be(undefined);
-            expect(dog).to.have.property('color');
+            expect(dog.color).to.be('black');
           }
         });
         done();
