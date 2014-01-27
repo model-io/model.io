@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var extend = require('mongoose-schema-extend');
 var util = require('util');
+var _ = require('lodash');
 
 var ModelIOSchema = new Schema({
   _read: { 
@@ -33,7 +34,26 @@ ModelIOSchema.statics.findWithUser = function(user, conditions, fields, options,
     ]}
   ]};
   var query = this.find(conditions, fields, options);
-  query.exec(callback);
+  query.exec(function(err, collection) {
+    collection = collection.map(function(entity) {
+      if (entity._owner == user.id) {
+        return pick(entity, entity._read.owner);
+      }
+      isMember = _.some(user.groups, function(group) { 
+        return group.toString() == entity._group;
+      });
+      if (isMember) {
+        return pick(entity, entity._read.group);
+      }
+      return pick(entity, entity._read.all);
+    });
+    callback(err, collection);
+  });
+}
+
+function pick(entity, attributes) {
+  attributes.push('_owner', '_read');
+  return _.contains(attributes, '*') ? entity : _.pick(entity, attributes);
 }
 
 module.exports = ModelIOSchema;
