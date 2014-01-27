@@ -19,6 +19,11 @@
   "license": "MIT",
   "dependencies": {
     "mongoose": "~3.8.5",
-    "mongoose-schema-extend": "~0.1.7"
+    "mongoose-schema-extend": "~0.1.7",
+    "async": "~0.2.10"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "expect.js": "~0.2.0"
   }
 }
