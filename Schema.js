@@ -4,6 +4,9 @@ var extend = require('mongoose-schema-extend');
 var util = require('util');
 var _ = require('lodash');
 
+const DEFAULT_ATTRIBUTES = ['_read', '_write', '_delete', '_owner', '_group'];
+const INTERNAL_ATTRIBUTES = ['__v', '__t'];
+
 var ModelIOSchema = new Schema({
   _read: { 
     owner: { type: [String], default: ['*'] },
@@ -52,8 +55,11 @@ ModelIOSchema.statics.findWithUser = function(user, conditions, fields, options,
 }
 
 function pick(entity, attributes) {
-  attributes.push('_owner', '_read');
-  return _.contains(attributes, '*') ? entity : _.pick(entity, attributes);
+  attributes = _.union(attributes, DEFAULT_ATTRIBUTES);
+  entity._doc = _.contains(attributes, '*')
+    ? _.omit(entity._doc, INTERNAL_ATTRIBUTES)
+    : _.pick(entity._doc, attributes);
+  return entity;
 }
 
 module.exports = ModelIOSchema;

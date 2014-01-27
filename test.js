@@ -64,7 +64,7 @@ describe('modelio', function(){
     }, done);
   });
 
-  describe('filter results find by right', function() {
+  describe('filter results find by permissions', function() {
     it('should give dog when searching as owner', function(done) {
       Dog.findWithUser(you, {name: 'Dolly'}, {}, {}, function(err, dogs) {
         expect(dogs.length).to.be(1);
@@ -90,16 +90,17 @@ describe('modelio', function(){
       });
     });
   });
-  describe('filter results attributes find by right', function() {
-    it('should give only information according rights', function(done) {
+  describe('filter results attributes find by permissions', function() {
+    it('should give only information according permissions', function(done) {
       Dog.findWithUser(you, {}, {}, {}, function(err, dogs) {
         expect(dogs.length).to.be(2);
         dogs.forEach(function(dog) {
+          expect(dog).to.be.a(Dog);
           if (dog._owner == you.id) {
             expect(dog).to.have.property('name');
             expect(dog).to.have.property('color');
           } else {
-            expect(dog).to.not.have.property('name');
+            expect(dog.name).to.be(undefined);
             expect(dog).to.have.property('color');
           }
         });
