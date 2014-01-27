@@ -8,7 +8,7 @@ const DEFAULT_ATTRIBUTES = ['_read', '_write', '_delete', '_owner', '_group'];
 const INTERNAL_ATTRIBUTES = ['__v', '__t'];
 
 var ModelIOSchema = new Schema({
-  _read: { 
+  _read: {
     owner: { type: [String], default: ['*'] },
     group: { type: [String], default: [] },
     all: { type: [String], default: [] }
@@ -39,19 +39,50 @@ ModelIOSchema.statics.findWithUser = function(user, conditions, fields, options,
   var query = this.find(conditions, fields, options);
   query.exec(function(err, collection) {
     collection = collection.map(function(entity) {
-      if (entity._owner == user.id) {
-        return pick(entity, entity._read.owner);
+      entity._orig = entity._doc;
+      var permissions = entity._read.all;
+      if (entity.isOwner(user)) {
+        permissions = _.union(permissions, entity._read.owner);
       }
-      isMember = _.some(user.groups, function(group) { 
-        return group.toString() == entity._group;
-      });
-      if (isMember) {
-        return pick(entity, entity._read.group);
+      if (entity.isMember(user)) {
+        permissions = _.union(permissions, entity._read.group);
       }
-      return pick(entity, entity._read.all);
+      return pick(entity, permissions);
     });
     callback(err, collection);
   });
+};
+
+ModelIOSchema.methods.isOwner = function(user) {
+  return user.id == this._owner;
+};
+
+ModelIOSchema.methods.isMember = function(user) {
+  return _.some(user.groups, function(group) {
+    return group.toString() == this._group;
+  }, this);
+};
+
+ModelIOSchema.methods.changedAttrs = function() {
+  return _.keys(_.pick(this._doc, function(value, key) {
+    return value != this._orig[key];
+  }, this), this);
+};
+
+ModelIOSchema.methods.saveWithUser = function(user, saveDone) {
+  var permissions = this._write.other;
+  if (this.isOwner(user)) {
+    permissions = _.union(permissions, this._write.owner);
+  }
+  if (this.isMember(user)) {
+    permissions = _.union(permissions, this._write.group);
+  }
+  var notAllowedAttrs = _.difference(this.changedAttrs(), permissions);
+  if (!_.isEmpty(notAllowedAttrs)) {
+    saveDone('You tried to save not allowed attributes:' + notAllowedAttrs.join(', '));
+  } else {
+    this.save(saveDone);
+  }
 }
 
 function pick(entity, attributes) {

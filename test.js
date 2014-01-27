@@ -122,4 +122,24 @@ describe('modelio', function(){
       });
     });
   });
+  describe('save entity', function() {
+    it('should allow save as owner', function(done) {
+      Dog.findWithUser(you, {name: 'Dolly'}, {}, {}, function(err, dogs) {
+        dogs[0].name = 'New Dolly';
+        dogs[0].save(function(err, dog) {
+          expect(err).to.be(null);
+          done();
+        });
+      });
+    });
+    it('should not allow save as stranger', function(done) {
+      Dog.findWithUser(you, {name: 'Rondo'}, {}, {}, function(err, dogs) {
+        dogs[0].color = 'red';
+        dogs[0].saveWithUser(you, function(err, dog) {
+          expect(err).to.not.be(null);
+          done();
+        });
+      });
+    });
+  });
 });
