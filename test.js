@@ -136,7 +136,7 @@ describe('modelio', function(){
       Dog.findWithUser(you, {name: 'Rondo'}, {}, {}, function(err, dogs) {
         dogs[0].color = 'red';
         dogs[0].saveWithUser(you, function(err, dog) {
-          expect(err).to.be.ok();
+          expect(err).to.be.a(Error);
           done();
         });
       });

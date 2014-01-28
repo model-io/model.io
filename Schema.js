@@ -79,7 +79,7 @@ ModelIOSchema.methods.saveWithUser = function(user, saveDone) {
   }
   var notAllowedAttrs = _.difference(this.changedAttrs(), permissions);
   if (!_.isEmpty(notAllowedAttrs)) {
-    saveDone('You tried to save not allowed attributes:' + notAllowedAttrs.join(', '));
+    saveDone(new Error('You tried to save not allowed attributes:' + notAllowedAttrs.join(', ')));
   } else {
     this.save(saveDone);
   }
