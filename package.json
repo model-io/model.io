@@ -25,6 +25,9 @@
   },
   "devDependencies": {
     "mocha": "~1.17.1",
-    "expect.js": "~0.2.0"
+    "expect.js": "~0.2.0",
+    "koa": "~0.3.0",
+    "koa-render": "~0.2.1",
+    "jade": "~1.1.5"
   }
 }
