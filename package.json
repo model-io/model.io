@@ -21,7 +21,8 @@
     "mongoose": "~3.8.5",
     "mongoose-schema-extend": "~0.1.7",
     "async": "~0.2.10",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "sockjs": "~0.3.8"
   },
   "devDependencies": {
     "mocha": "~1.17.1",

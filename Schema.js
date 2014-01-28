@@ -64,6 +64,7 @@ ModelIOSchema.methods.isMember = function(user) {
 };
 
 ModelIOSchema.methods.changedAttrs = function() {
+  // TODO see http://mongoosejs.com/docs/api.html#document_Document-modifiedPaths
   return _.keys(_.pick(this._doc, function(value, key) {
     return value != this._orig[key];
   }, this), this);
