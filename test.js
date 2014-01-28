@@ -17,9 +17,9 @@ describe('modelio', function(){
       name: String,
       color: String
     });
-    
+
     Dog = mongoose.model('Dog', DogSchema);
-    
+
     async.map([Group, User,  Dog], function(collection, done) {
       collection.remove({}, done);
     }, done);
@@ -49,7 +49,7 @@ describe('modelio', function(){
       name: 'Admin',
       groups: [inGroup, outGroup],
     });
-    
+
     dolly = new Dog({
       name: 'Dolly',
       color: 'black',
