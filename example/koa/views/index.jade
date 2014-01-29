@@ -3,10 +3,12 @@ doctype html5
 html
   head
     script(src='lib/sock.js')
+    script(src='lib/multiplex_client.js')
     script(src='models.js')
     script.
+      var dogs;
       models.Dog.find({name: 'Dolly'}, {}, function(res) {
-        console.log(res);
+        dogs = res;
       });
   body
 

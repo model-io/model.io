@@ -1,7 +1,16 @@
 var models = {};
 
 (function() {
-  var sock = new SockJS('/ws');
+  var WSM = WebSocketMultiplex;
+  var baseCh = new WSM(new SockJS('/ws'));
+
+  var modelCh = baseCh.channel('_model');
+  modelCh.onopen = function() {
+    modelCh.send('ready');
+  }
+
+  var sock = baseCh.channel('_sock');
+
   function send(method, data, done) {
     sock.onmessage = function(e) {
       done(JSON.parse(e.data));

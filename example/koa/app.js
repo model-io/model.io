@@ -18,7 +18,6 @@ app.use(koaMW({
 //register client js
 app.use(serve('client/'));
 
-
 app.use(function *(){
   this.body = yield this.render('index');
 });

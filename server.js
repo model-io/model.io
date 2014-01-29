@@ -1,10 +1,23 @@
 var http = require('http')
 var sockjs = require('sockjs');
-var echo = sockjs.createServer();
+var WSM = require('websocket-multiplex').MultiplexServer;
+
+var ws = sockjs.createServer();
+var baseCh = new WSM(ws);
+
+var modelCh = baseCh.registerChannel('_model');
+modelCh.on('connection', function(conn) {
+  conn.on('data', function(data) {
+    console.log(data);
+  });
+});
+
+var echo = baseCh.registerChannel('_sock');
 
 var models;
 
 echo.on('connection', function(conn) {
+  addModels(conn);
   conn.on('data', function(message) {
     message = JSON.parse(message);
     var parts = message.method.split('.');
@@ -19,9 +32,13 @@ echo.on('connection', function(conn) {
   conn.on('close', function() {});
 });
 
+function addModels(conn) {
+}
+
+
 module.exports = function(app, _models) {
   var server = http.Server(app.callback());
-  echo.installHandlers(server, {prefix:'/ws'});
+  ws.installHandlers(server, {prefix:'/ws'});
   models = _models;
   return server;
 }
