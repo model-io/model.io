@@ -3,17 +3,11 @@ var serve = require('koa-static');
 var views = require('koa-render');
 var app = koa();
 
-var koaMW = require('../../plugins/koa.js');
 var server = require('../../server.js');
 
 var models = require('./models');
 
 app.use(views(__dirname + '/views', 'jade'));
-
-// register middleware
-app.use(koaMW({
-  models: models
-}));
 
 //register client js
 app.use(serve('client/'));

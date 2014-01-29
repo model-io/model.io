@@ -1,12 +1,20 @@
-var models = {};
+var models = {
+  onReady: new signals.Signal()
+};
 
 (function() {
   var WSM = WebSocketMultiplex;
   var baseCh = new WSM(new SockJS('/ws'));
+  var toJSON = JSON.stringify;
+  var fromJSON = JSON.parse;
 
   var modelCh = baseCh.channel('_model');
-  modelCh.onopen = function() {
-    modelCh.send('ready');
+  modelCh.onmessage = function(e) {
+    _models = fromJSON(e.data);
+    _models.forEach(function(model) {
+      models._add(model.name, {});
+    });
+    models.onReady.dispatch(models);
   }
 
   var sock = baseCh.channel('_sock');
@@ -15,9 +23,7 @@ var models = {};
     sock.onmessage = function(e) {
       done(JSON.parse(e.data));
     };
-    sock.onopen = function() {
-      sock.send(JSON.stringify({method: method, data: data}));
-    };
+    sock.send(JSON.stringify({method: method, data: data}));
   }
 
   sock.onclose = function() {
@@ -67,7 +73,3 @@ var models = {};
     return target;
   }
 })();
-
-<% _.each(models, function(model) { %>
-  models._add('<%= model.modelName %>');
-<% }); %>

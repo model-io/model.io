@@ -1,23 +1,20 @@
+var _ = require('lodash');
 var http = require('http')
 var sockjs = require('sockjs');
 var WSM = require('websocket-multiplex').MultiplexServer;
 
+
 var ws = sockjs.createServer();
 var baseCh = new WSM(ws);
+var toJSON = JSON.stringify;
+var fromJSON = JSON.parse;
 
 var modelCh = baseCh.registerChannel('_model');
-modelCh.on('connection', function(conn) {
-  conn.on('data', function(data) {
-    console.log(data);
-  });
-});
-
 var echo = baseCh.registerChannel('_sock');
 
 var models;
 
 echo.on('connection', function(conn) {
-  addModels(conn);
   conn.on('data', function(message) {
     message = JSON.parse(message);
     var parts = message.method.split('.');
@@ -32,13 +29,20 @@ echo.on('connection', function(conn) {
   conn.on('close', function() {});
 });
 
-function addModels(conn) {
+function pushModels(models) {
+  modelCh.on('connection', function(conn) {
+    conn.write(toJSON(models));
+  });
 }
-
 
 module.exports = function(app, _models) {
   var server = http.Server(app.callback());
   ws.installHandlers(server, {prefix:'/ws'});
   models = _models;
+  pushModels(_.map(models, function(model) {
+    return {
+      name: model.modelName
+    }
+  }));
   return server;
 }
