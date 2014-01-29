@@ -6,8 +6,15 @@ var models;
 
 echo.on('connection', function(conn) {
   conn.on('data', function(message) {
-    console.log(message);
-    conn.write(message);
+    message = JSON.parse(message);
+    var parts = message.method.split('.');
+    var model = models[parts[0]];
+    var action = model[parts[1]];
+    var args = message.data;
+    args.push(function(err, res) {
+      conn.write(JSON.stringify(res));
+    });
+    model.find.apply(model, args);
   });
   conn.on('close', function() {});
 });

@@ -16,8 +16,8 @@ var models = {};
   };
 
   models._add = function(name, options) {
-    models[name] = function(data) {
-      BaseModel.call(this, name, data);
+    models[name] = function Model(data) {
+      BaseModel.call(this, data);
     }
     models[name].name = name;
     models[name].prototype = Object.create(BaseModel.prototype);
@@ -33,7 +33,16 @@ var models = {};
   }
 
   BaseModel.find = function(where, options, findDone) {
-    send(this.__t + '.find', {where: where, options: options}, findDone);
+    send(this.__t + '.find', [where, options], function(data) {
+      collection = [];
+      for (var i in data) {
+        var entity = data[i];
+        Model = models[entity.__t];
+        entity = new Model(entity);
+        collection.push(entity);
+      }
+      findDone(collection);
+    });
   }
 
   BaseModel.prototype = {
