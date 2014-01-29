@@ -2,9 +2,11 @@ doctype html5
 
 html
   head
-    script(src='http://cdn.sockjs.org/sockjs-0.3.min.js')
+    script(src='sock.js')
     script(src='models.js')
     script.
-      models.Dog.find({}, {}, alert);
+      models.Dog.find({name: 'Dolly'}, {}, function(res) {
+        console.log(res);
+      });
   body
 

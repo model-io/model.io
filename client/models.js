@@ -1,25 +1,30 @@
 var models = {};
 
 (function() {
-
   var sock = new SockJS('/ws');
-  sock.onopen = function() {
-    console.log('open');
-  };
-  sock.onmessage = function(e) {
-    console.log('message', e.data);
-  };
+  function send(method, data, done) {
+    sock.onmessage = function(e) {
+      done(JSON.parse(e.data));
+    };
+    sock.onopen = function() {
+      sock.send(JSON.stringify({method: method, data: data}));
+    };
+  }
+
   sock.onclose = function() {
     console.log('close');
   };
 
   models._add = function(name, options) {
     models[name] = function(data) {
-      BaseModel.call(this, data);
+      BaseModel.call(this, name, data);
     }
+    models[name].name = name;
     models[name].prototype = Object.create(BaseModel.prototype);
+    models[name].__t = name;
     extend(models[name], BaseModel);
   }
+  
   // We use simple prototype inherence here
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_Revisited
 
@@ -28,13 +33,10 @@ var models = {};
   }
 
   BaseModel.find = function(where, options, findDone) {
-    console.log(arguments);
+    send(this.__t + '.find', {where: where, options: options}, findDone);
   }
 
   BaseModel.prototype = {
-    test: function() {
-      console.log('test');
-    },
     save: function(done) {
     }
   }

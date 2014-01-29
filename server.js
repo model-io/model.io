@@ -5,10 +5,11 @@ var echo = sockjs.createServer();
 var models;
 
 echo.on('connection', function(conn) {
-    conn.on('data', function(message) {
-        conn.write(message);
-    });
-    conn.on('close', function() {});
+  conn.on('data', function(message) {
+    console.log(message);
+    conn.write(message);
+  });
+  conn.on('close', function() {});
 });
 
 module.exports = function(app, _models) {
