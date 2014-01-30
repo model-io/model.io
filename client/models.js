@@ -32,7 +32,10 @@ var models = {
   };
 
   models._add = function(name, options) {
-    var Model = P(BaseModel, function Model(model) {
+    var Model = P(BaseModel, function Model(model, supr) {
+      model.init = function(data) {
+        supr.init.call(this, data);
+      }
     });
     Model.name = Model.__t = name;
     extend(Model, BaseModel);
