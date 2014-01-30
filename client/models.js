@@ -8,6 +8,7 @@ var models = {
   var toJSON = JSON.stringify;
   var fromJSON = JSON.parse;
 
+  // Create basic channel to recive models
   var modelCh = baseCh.channel('_model');
   modelCh.onmessage = function(e) {
     _models = fromJSON(e.data);
@@ -31,21 +32,21 @@ var models = {
   };
 
   models._add = function(name, options) {
-    models[name] = function Model(data) {
-      BaseModel.call(this, data);
-    }
-    models[name].name = name;
-    models[name].prototype = Object.create(BaseModel.prototype);
-    models[name].__t = name;
-    extend(models[name], BaseModel);
+    var Model = P(BaseModel, function Model(model) {
+    });
+    Model.name = Model.__t = name;
+    extend(Model, BaseModel);
+    models[name] = Model;
   }
   
-  // We use simple prototype inherence here
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_Revisited
-
-  function BaseModel(data) {
-    extend(this, data);
-  }
+  BaseModel = P(function BaseModel(model) {
+    model.init = function(data) {
+      extend(this, data);
+    }
+    model.save = function() {
+      console.log('saved');
+    }
+  });
 
   BaseModel.find = function(where, options, findDone) {
     send(this.__t + '.find', [where, options], function(data) {
@@ -58,11 +59,6 @@ var models = {
       }
       findDone(collection);
     });
-  }
-
-  BaseModel.prototype = {
-    save: function(done) {
-    }
   }
 
   function extend (target, source) {
