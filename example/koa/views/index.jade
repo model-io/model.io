@@ -12,6 +12,7 @@ html
       models.onReady.add(function(models) {
         models.Dog.find({name: 'Dolly'}, {}, function(res) {
           dogs = res;
+          dogs[0].bark('waffff!');
         });
       });
   body

@@ -8,6 +8,9 @@ var DogSchema = ModelIOSchema.extend({
   color: String
 });
 
+DogSchema.methods.bark = function(sound) {
+  console.log(this.name + ' says: ' + sound || 'wufff!');
+}
 var Dog = mongoose.model('Dog', DogSchema);
 
 module.exports = {

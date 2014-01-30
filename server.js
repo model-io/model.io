@@ -22,6 +22,7 @@ echo.on('connection', function(conn) {
     var action = model[parts[1]];
     var args = message.data;
     args.push(function(err, res) {
+      res[0].bark('ouuu');
       conn.write(JSON.stringify(res));
     });
     model.find.apply(model, args);
@@ -41,7 +42,10 @@ module.exports = function(app, _models) {
   models = _models;
   pushModels(_.map(models, function(model) {
     return {
-      name: model.modelName
+      name: model.modelName,
+      methods: {
+        bark: model.schema.methods.bark.toString()
+      }
     }
   }));
   return server;

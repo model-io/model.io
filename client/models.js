@@ -13,7 +13,7 @@ var models = {
   modelCh.onmessage = function(e) {
     _models = fromJSON(e.data);
     _models.forEach(function(model) {
-      models._add(model.name, {});
+      models._add(model);
     });
     models.onReady.dispatch(models);
   }
@@ -31,15 +31,18 @@ var models = {
     console.log('close');
   };
 
-  models._add = function(name, options) {
+  models._add = function(options) {
     var Model = P(BaseModel, function Model(model, supr) {
       model.init = function(data) {
         supr.init.call(this, data);
       }
+      for(methodName in options.methods) {
+        model[methodName] = buildFunc(this, options.methods[methodName]);
+      }
     });
-    Model.name = Model.__t = name;
+    Model.name = Model.__t = options.name;
     extend(Model, BaseModel);
-    models[name] = Model;
+    models[options.name] = Model;
   }
   
   BaseModel = P(function BaseModel(model) {
@@ -70,5 +73,9 @@ var models = {
       target[prop] = source[prop];
     }
     return target;
+  }
+
+  function buildFunc(thisPointer, code) {
+    return Function('return ' + code).apply(thisPointer);
   }
 })();
