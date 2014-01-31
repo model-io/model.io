@@ -25,7 +25,7 @@ function classProperties(model) {
 
 function methods(model) {
   return _(model.p).omit(function(method, name) {
-    return name.match(/constructor/);
+    return name.match(/constructor/) || (!method.pub && name !== 'init');
   }).map(function(method, name) {
     return [name, method.toString()];
   }).object().valueOf();
