@@ -17,3 +17,5 @@ app.use(function *(){
 });
 
 server(app, models).listen(3000);
+
+models.Dog({name: 'Rondo'}).bark('aahooooooooo');

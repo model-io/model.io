@@ -1,17 +1,11 @@
-var mongoose = require('mongoose');
-var ModelIOSchema = require('../../Schema');
+var P = require('pjs').P;
+var ModelIO = require('../../ModelIO');
 
-mongoose.connect('mongodb://localhost/model-io-exmaple');
-
-var DogSchema = ModelIOSchema.extend({
-  name: String,
-  color: String
+var Dog = P(ModelIO, function($model, $super, $class, $superclass) {
+  $model.bark = function(sound) {
+    console.log(this.name + ' says: ' + sound || 'wufff!');
+  }
 });
-
-DogSchema.methods.bark = function(sound) {
-  console.log(this.name + ' says: ' + sound || 'wufff!');
-}
-var Dog = mongoose.model('Dog', DogSchema);
 
 module.exports = {
   Dog: Dog

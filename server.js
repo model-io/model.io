@@ -20,11 +20,14 @@ echo.on('connection', function(conn) {
     var parts = message.method.split('.');
     var model = models[parts[0]];
     var action = model[parts[1]];
+    var user = 'Admin';
     var args = message.data;
+    args.unshift(user);
     args.push(function(err, res) {
       res[0].bark('ouuu');
       conn.write(JSON.stringify(res));
     });
+    console.log(model);
     model.find.apply(model, args);
   });
   conn.on('close', function() {});
@@ -40,11 +43,24 @@ module.exports = function(app, _models) {
   var server = http.Server(app.callback());
   ws.installHandlers(server, {prefix:'/ws'});
   models = _models;
-  pushModels(_.map(models, function(model) {
+  pushModels(_.map(models, function(model, name) {
+    model.ch = baseCh.registerChannel(name);
+    model.ch.on('connection', function(conn) {
+      conn.on('data', function(message) {
+        message = fromJSON(message)
+        var args = message.data;
+        var user = 'Dude';
+        args.unshift(user);
+        args.push(function(err, res) {
+          conn.write(toJSON(res));
+        });
+        model[message.method].apply(model, args);
+      });
+    });
     return {
-      name: model.modelName,
+      name: name,
       methods: {
-        bark: model.schema.methods.bark.toString()
+        bark: model.p.bark.toString()
       }
     }
   }));

@@ -15,57 +15,50 @@ var models = {
     _models.forEach(function(model) {
       models._add(model);
     });
-    models.onReady.dispatch(models);
+    // wait for next tick so subchannels are established
+    setTimeout(function() {
+      models.onReady.dispatch(models);
+    }, 0);
   }
-
-  var sock = baseCh.channel('_sock');
-
-  function send(method, data, done) {
-    sock.onmessage = function(e) {
-      done(JSON.parse(e.data));
-    };
-    sock.send(JSON.stringify({method: method, data: data}));
-  }
-
-  sock.onclose = function() {
-    console.log('close');
-  };
 
   models._add = function(options) {
-    var Model = P(BaseModel, function Model(model, supr) {
-      model.init = function(data) {
-        supr.init.call(this, data);
+    models[options.name] = P(BaseModel, function Model($model, $super, $class, $superclass) {
+      $model.init = function(data) {
+        $super.init.call(this, data);
       }
       for(methodName in options.methods) {
-        model[methodName] = buildFunc(this, options.methods[methodName]);
+        $model[methodName] = buildFunc(this, options.methods[methodName]);
       }
+      $class.ch = baseCh.channel(options.name);
     });
-    Model.name = Model.__t = options.name;
-    extend(Model, BaseModel);
-    models[options.name] = Model;
-  }
+  };
   
-  BaseModel = P(function BaseModel(model) {
-    model.init = function(data) {
+  BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
+    $model.init = function(data) {
       extend(this, data);
     }
-    model.save = function() {
+    $model.save = function() {
       console.log('saved');
     }
+    $class.find = function(where, options, findDone) {
+      var self = this;
+      this.send('find', [where, options], function(data) {
+        collection = [];
+        for (var i in data) {
+          var entity = data[i];
+          entity = new self(entity);
+          collection.push(entity);
+        }
+        findDone(collection);
+      });
+    }
+    $class.send = function(method, data, sendDone) {
+      this.ch.onmessage = function(e) {
+        sendDone(JSON.parse(e.data));
+      };
+      this.ch.send(JSON.stringify({method: method, data: data}));
+    }
   });
-
-  BaseModel.find = function(where, options, findDone) {
-    send(this.__t + '.find', [where, options], function(data) {
-      collection = [];
-      for (var i in data) {
-        var entity = data[i];
-        Model = models[entity.__t];
-        entity = new Model(entity);
-        collection.push(entity);
-      }
-      findDone(collection);
-    });
-  }
 
   function extend (target, source) {
     target = target || {};
