@@ -35,9 +35,6 @@ var models = {
   };
   
   var BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
-    $model.init = function(data) {
-      extend(this, data);
-    }
     $model.save = function() {
       console.log('saved');
     }
@@ -60,14 +57,6 @@ var models = {
       this.ch.send(JSON.stringify({method: method, data: data}));
     }
   });
-
-  function extend (target, source) {
-    target = target || {};
-    for (var prop in source) {
-      target[prop] = source[prop];
-    }
-    return target;
-  }
 
   function buildFunc(thisPointer, code, $super) {
     return Function('$super', 'return ' + code).call(thisPointer, $super);
