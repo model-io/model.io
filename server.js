@@ -59,6 +59,9 @@ module.exports = function(app, _models) {
     });
     return {
       name: name,
+      classProperties: {
+        superClassName: model.superClassName
+      },
       methods: {
         bark: model.p.bark.toString()
       }

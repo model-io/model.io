@@ -7,6 +7,14 @@ var Dog = P(ModelIO, function($model, $super, $class, $superclass) {
   }
 });
 
+var Chihuahua = P(Dog, function($model, $super, $class, $superclass) {
+  $class.superClassName = 'Dog';
+  $model.bark = function() {
+    $super.bark.call(this, 'waffwaffwaff');
+  }
+});
+
 module.exports = {
-  Dog: Dog
+  Dog: Dog,
+  Chihuahua: Chihuahua
 };

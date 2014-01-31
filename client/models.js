@@ -22,18 +22,19 @@ var models = {
   }
 
   models._add = function(options) {
-    models[options.name] = P(BaseModel, function Model($model, $super, $class, $superclass) {
+    var Super = models[options.classProperties.superClassName] || BaseModel;
+    models[options.name] = P(Super, function Model($model, $super, $class, $superclass) {
       $model.init = function(data) {
         $super.init.call(this, data);
       }
       for(methodName in options.methods) {
-        $model[methodName] = buildFunc(this, options.methods[methodName]);
+        $model[methodName] = buildFunc(this, options.methods[methodName], $super);
       }
       $class.ch = baseCh.channel(options.name);
     });
   };
   
-  BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
+  var BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
     $model.init = function(data) {
       extend(this, data);
     }
@@ -68,7 +69,7 @@ var models = {
     return target;
   }
 
-  function buildFunc(thisPointer, code) {
-    return Function('return ' + code).apply(thisPointer);
+  function buildFunc(thisPointer, code, $super) {
+    return Function('$super', 'return ' + code).call(thisPointer, $super);
   }
 })();
