@@ -6,6 +6,7 @@ client-server models with automatic syncronisation
 Roadmap
 =======
 
+* Interagtion tests (with phantom.js)
 * allow model save
 * middleware plugin architecture
 * auto sync models
