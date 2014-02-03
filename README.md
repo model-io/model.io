@@ -32,6 +32,8 @@ Roadmap
 * auto sync models
 * Pub/sub on model events
 * pub/sub on collection events
+* using local storage for caching model code
+* using local storage for caching data
 * Monk plugin
 * Angular plugin
 * REST-Api plugin
