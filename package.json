@@ -34,6 +34,7 @@
     "koa": "~0.3.0",
     "koa-render": "~0.2.1",
     "jade": "~1.1.5",
-    "koa-static": "~1.4.2"
+    "koa-static": "~1.4.2",
+    "zombie": "~2.0.0-alpha25"
   }
 }
