@@ -25,13 +25,14 @@ function classProperties(model) {
 
 function methods(model) {
   return _(model.p).omit(function(method, name) {
-    return name.match(/constructor/) || (!method.pub && name !== 'init');
+    return name.match(/constructor/)
+        || (!method.type === server.TYPE_PUBLIC && name !== 'init');
   }).map(function(method, name) {
     return [name, method.toString()];
   }).object().valueOf();
 }
 
-module.exports = function(app, _models) {
+function server(app, _models) {
   var server;
   if (app.callback) {
     server = http.Server(app.callback());
@@ -63,3 +64,8 @@ module.exports = function(app, _models) {
   return server;
 }
 
+server.TYPE_PUBLIC = 'public';
+server.TYPE_PROXY = 'proxy';
+server.TYPE_PRIVATE = 'private';
+
+module.exports = server
