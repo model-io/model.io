@@ -21,12 +21,14 @@ Whats already working:
 * pushing of model configuraiton (mostly class and instance methods) throught the socket
 * Allow running a `find`-Operation throught the websocket.
 * Auto-Rebuild inheritance chain of backend in frontend using prototype inheritance (with minimal syntactic sugar of [p.js](https://github.com/jayferd/pjs))
+* Test suite using [zombie.js](http://zombie.labnotes.org/)
 
 
 Roadmap
 -------
 
-* Interagtion tests (with phantom.js)
+* ~~Interagtion tests (with phantom.js)~~
+* clean up repo
 * allow model save
 * middleware plugin architecture
 * auto sync models
