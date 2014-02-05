@@ -35,6 +35,8 @@
     "koa-render": "~0.2.1",
     "jade": "~1.1.5",
     "koa-static": "~1.4.2",
-    "zombie": "~2.0.0-alpha25"
+    "zombie": "~2.0.0-alpha25",
+    "express": "~3.4.8",
+    "source-map": "~0.1.31"
   }
 }

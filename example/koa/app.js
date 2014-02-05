@@ -10,7 +10,7 @@ var models = require('./models');
 app.use(views(__dirname + '/views', 'jade'));
 
 //register client js
-app.use(serve('client/'));
+app.use(serve(__dirname + '../../../client/'));
 
 app.use(function *(){
   this.body = yield this.render('index');

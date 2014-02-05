@@ -32,7 +32,12 @@ function methods(model) {
 }
 
 module.exports = function(app, _models) {
-  var server = http.Server(app.callback());
+  var server;
+  if (app.callback) {
+    server = http.Server(app.callback());
+  } else {
+    server = http.Server(app);
+  }
   ws.installHandlers(server, {prefix:'/ws'});
   models = _models;
   pushModels(_.map(models, function(model, name) {
