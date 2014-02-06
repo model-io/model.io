@@ -29,7 +29,7 @@ Roadmap
 
 * ~~Interagtion tests (with phantom.js)~~
 * clean up repo
-* allow model save
+* implement method types (public, proxy, private)
 * middleware plugin architecture
 * auto sync models
 * Pub/sub on model events
