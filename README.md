@@ -27,8 +27,6 @@ Whats already working:
 Roadmap
 -------
 
-* ~~Interagtion tests (with phantom.js)~~
-* clean up repo
 * implement method types (public, proxy, private)
 * middleware plugin architecture
 * auto sync models
