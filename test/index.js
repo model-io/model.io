@@ -1,9 +1,9 @@
 var Browser = require('zombie');
 var expect = require('expect.js');
-var P = require('pjs').P;
+var p = require('pjs').P;
 
 var app = require('./server/app');
-var serverIO = require('../server');
+var serverIO = require('../');
 
 describe('visit', function() {
   var browser;
@@ -13,20 +13,20 @@ describe('visit', function() {
 
   before(function(done) {
 
-    models.Dog = P(function($model, $super, $class, $superclass) {
+    models.Dog = p(function($model, $super, $class, $superclass) {
       $model.init = function(data) {
         _.extend(this, data);
       };
 
       function bark(sound) {
-        console.log(this.name + ' says: ' + sound || 'wufff!');
+        return this.name + ' says: ' + sound || 'wufff!';
       }
 
       $model.bark = bark;
       $model.bark.type = serverIO.TYPE_PUBLIC;
     });
 
-    models.Chihuahua = P(models.Dog, function($model, $super, $class, $superclass) {
+    models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
       function init(data) {
         $super.init.call(this, {name: 'Susi'});
       }
@@ -40,7 +40,7 @@ describe('visit', function() {
       $model.init = init;
     });
 
-    models.BlackChihuahua = P(models.Chihuahua, function() { });
+    models.BlackChihuahua = p(models.Chihuahua, function() { });
 
     server = serverIO(app, models).listen(3000, function() {
       browser = new Browser();
@@ -64,6 +64,6 @@ describe('visit', function() {
   });
 
   after(function() {
-    server.close()
+    server.close();
   });
 });
