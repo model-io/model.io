@@ -27,8 +27,6 @@ describe('visit', function() {
     });
 
     models.Chihuahua = P(models.Dog, function($model, $super, $class, $superclass) {
-      $class.superClassName = 'Dog';
-    
       function init(data) {
         $super.init.call(this, {name: 'Susi'});
       }
@@ -41,6 +39,9 @@ describe('visit', function() {
       $model.bark.type = serverIO.TYPE_PUBLIC;
       $model.init = init;
     });
+
+    models.BlackChihuahua = P(models.Chihuahua, function() { });
+
     server = serverIO(app, models).listen(3000, function() {
       browser = new Browser();
       browser.visit('http://localhost:3000/', function() {

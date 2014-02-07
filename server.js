@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var http = require('http')
+var http = require('http');
 var sockjs = require('sockjs');
 var WSM = require('websocket-multiplex').MultiplexServer;
 
@@ -58,10 +58,25 @@ function server(app, _models) {
     return {
       name: name,
       classProperties: classProperties(model),
+      superClassName: superClassName(model, name),
       methods: methods(model)
     }
   }));
   return server;
+}
+
+function superClassName(model, name) {
+  _.each(superClasses(model), function(superClass, superClassName) {
+    model.superClasses = _.omit(model.superClasses, _.keys(superClasses(superClass)))
+  });
+  return _.keys(model.superClasses)[0];
+}
+
+function superClasses(model) {
+  model.superClasses = model.superClasses || _.pick(models, function(parent) {
+    return model.prototype instanceof parent;
+  });
+  return model.superClasses;
 }
 
 server.TYPE_PUBLIC = 'public';

@@ -22,7 +22,7 @@ var models = {
   }
 
   models._add = function(options) {
-    var Super = models[options.classProperties.superClassName] || BaseModel;
+    var Super = models[options.superClassName] || BaseModel;
     models[options.name] = P(Super, function Model($model, $super, $class, $superclass) {
       $model.init = function(data) {
         $super.init.call(this, data);
