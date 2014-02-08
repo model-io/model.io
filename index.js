@@ -9,7 +9,6 @@ var toJSON = JSON.stringify;
 var fromJSON = JSON.parse;
 
 var modelCh = baseCh.registerChannel('_model');
-var models;
 
 function pushModels(models) {
   modelCh.on('connection', function(conn) {
@@ -23,16 +22,16 @@ function classProperties(model) {
   };
 }
 
-function superClasses(model) {
+function superClasses(model, models) {
   model.superClasses = model.superClasses || _.pick(models, function(parent) {
     return model.prototype instanceof parent;
   });
   return model.superClasses;
 }
 
-function superClassName(model, name) {
-  _.each(superClasses(model), function(superClass, superClassName) {
-    model.superClasses = _.omit(model.superClasses, _.keys(superClasses(superClass)));
+function superClassName(model, models) {
+  _.each(superClasses(model, models), function(superClass, superClassName) {
+    model.superClasses = _.omit(model.superClasses, _.keys(superClasses(superClass, models)));
   });
   return _.keys(model.superClasses)[0];
 }
@@ -52,7 +51,7 @@ function instanceProxies(model) {
   }).keys().valueOf();
 }
 
-function ModelIOServer(app, _models) {
+function ModelIOServer(app, models) {
   var server;
   if (app.callback) {
     server = http.Server(app.callback());
@@ -60,7 +59,6 @@ function ModelIOServer(app, _models) {
     server = http.Server(app);
   }
   ws.installHandlers(server, {prefix:'/ws'});
-  models = _models;
   pushModels(_.map(models, function(Model, name) {
     Model.ch = baseCh.registerChannel(name);
     Model.ch.on('connection', function(conn) {
@@ -75,12 +73,18 @@ function ModelIOServer(app, _models) {
         });
         // TODO fetch 'right' instance
         var instance = new Model();
-        instance[e.name].apply(instance, args);
+        // check if method exists and is of type proxy
+        if (_.isFunction(instance[e.name]) && instance[e.name].type == ModelIOServer.TYPE_PROXY) {
+          // call it
+          return instance[e.name].apply(instance, args);
+        }
+        // otherwise: throw error
+        conn.write(toJSON({err: 'Method with name `' + e.name + '` is not available'}));
       });
     });
     return {
       name: name,
-      superClassName: superClassName(Model, name),
+      superClassName: superClassName(Model, models),
       classProperties: classProperties(Model),
       instanceMethods: instanceMethods(Model),
       instanceProxies: instanceProxies(Model)
