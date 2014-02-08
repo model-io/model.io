@@ -71,7 +71,10 @@ function ModelIOServer(app, _models) {
         var user = 'Dude';
         args.unshift(user);
         args.push(function(err, res) {
-          conn.write(res);
+          conn.write(toJSON({
+            err: err,
+            res: res
+          }));
         });
         var instance = new Model();
         instance[name].apply(instance, args);

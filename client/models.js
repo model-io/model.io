@@ -19,7 +19,7 @@ var models = {
   }
 
   models._add = function(options) {
-    var Super = models[options.superClassName] || BaseModel;
+    var Super = models[options.superClassName] || Object;
     models[options.name] = P(Super, function Model($model, $super, $class, $superclass) {
       $class.ch = baseCh.channel(options.name);
       for(methodName in options.instanceMethods) {
@@ -32,35 +32,14 @@ var models = {
           args = Array.prototype.slice.call(arguments, 0);
           done = args.pop();
           $class.ch.onmessage = function(e) {
-            done(null, e.data);
+            e = fromJSON(e.data);
+            done(e.err, e.res);
           }
           $class.ch.send(toJSON([methodName, args]));
         }
       }
     });
   };
-  
-  var BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
-    $class.find = function(where, options, findDone) {
-      var self = this;
-      this.send('find', [where, options], function(data) {
-        collection = [];
-        for (var i in data) {
-          var entity = data[i];
-          entity = new self(entity);
-          collection.push(entity);
-        }
-        findDone(collection);
-      });
-    }
-    $class.send = function(method, data, sendDone) {
-      this.ch.onmessage = function(e) {
-        sendDone(JSON.parse(e.data));
-      };
-      this.ch.send(JSON.stringify({method: method, data: data}));
-    }
-  });
-
   function buildFunc(thisPointer, code, $super) {
     return Function('$super', 'return ' + code).call(thisPointer, $super);
   }
