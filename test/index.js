@@ -23,6 +23,10 @@ describe('visit', function() {
         return this.name + ' says: ' + sound || 'wufff!';
       }
 
+      function fetch(user, thing, bringBack) {
+        bringBack(null, 'here is the ' + thing);
+      }
+
       function eat(food) {
         return this.name + ' eats tasty ' + (food || 'meat') + '.';
       }
@@ -30,6 +34,9 @@ describe('visit', function() {
       $model.bark = bark;
       $model.bark.type = serverIO.TYPE_PUBLIC;
       $model.eat = eat;
+      $model.eat.type = serverIO.TYPE_PRIVATE;
+      $model.fetch = fetch;
+      $model.fetch.type = serverIO.TYPE_PROXY;
     });
 
     models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
@@ -89,6 +96,16 @@ describe('visit', function() {
       expect(clientDolly.eat).to.be(undefined);
       expect(serverDolly.eat).to.be.a('function');
       expect(serverDolly.eat()).to.be('Dolly eats tasty meat.');
+    });
+
+    it('should not be possible to call proxy methods', function(done) {
+      expect(clientDolly instanceof clientModels.Dog).to.be.ok();
+      expect(clientDolly.fetch).to.be.a('function');
+      clientDolly.fetch('ball', function(err, thing) {
+        expect(err).to.be(null);
+        expect(thing).to.eql('here is the ball');
+        done();
+      });
     });
   });
 

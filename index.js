@@ -37,13 +37,19 @@ function superClassName(model, name) {
   return _.keys(model.superClasses)[0];
 }
 
-function methods(model) {
+function instanceMethods(model) {
   return _(model.p).omit(function(method, name) {
     return name.match(/constructor/) ||
            (method.type !== ModelIOServer.TYPE_PUBLIC && name !== 'init');
   }).map(function(method, name) {
     return [name, method.toString()];
   }).object().valueOf();
+}
+
+function instanceProxies(model) {
+  return _(model.p).pick(function(method, name) {
+    return method.type === ModelIOServer.TYPE_PROXY
+  }).keys().valueOf();
 }
 
 function ModelIOServer(app, _models) {
@@ -55,25 +61,28 @@ function ModelIOServer(app, _models) {
   }
   ws.installHandlers(server, {prefix:'/ws'});
   models = _models;
-  pushModels(_.map(models, function(model, name) {
-    model.ch = baseCh.registerChannel(name);
-    model.ch.on('connection', function(conn) {
+  pushModels(_.map(models, function(Model, name) {
+    Model.ch = baseCh.registerChannel(name);
+    Model.ch.on('connection', function(conn) {
       conn.on('data', function(message) {
         message = fromJSON(message);
-        var args = message.data;
+        var name = message[0];
+        var args = message[1];
         var user = 'Dude';
         args.unshift(user);
         args.push(function(err, res) {
-          conn.write(toJSON(res));
+          conn.write(res);
         });
-        model[message.method].apply(model, args);
+        var instance = new Model();
+        instance[name].apply(instance, args);
       });
     });
     return {
       name: name,
-      classProperties: classProperties(model),
-      superClassName: superClassName(model, name),
-      methods: methods(model)
+      superClassName: superClassName(Model, name),
+      classProperties: classProperties(Model),
+      instanceMethods: instanceMethods(Model),
+      instanceProxies: instanceProxies(Model)
     };
   }));
   return server;

@@ -10,6 +10,8 @@ var models = {
 
   // Create basic channel to recive models
   var modelCh = baseCh.channel('_model');
+  //FIXME channel must be created upfront, maybe a bug in WebSocketMultiplex?
+  baseCh.channel('Dog');
   modelCh.onmessage = function(e) {
     _models = fromJSON(e.data);
     _models.forEach(function(model) {
@@ -24,20 +26,26 @@ var models = {
   models._add = function(options) {
     var Super = models[options.superClassName] || BaseModel;
     models[options.name] = P(Super, function Model($model, $super, $class, $superclass) {
-      $model.init = function(data) {
-        $super.init.call(this, data);
-      }
-      for(methodName in options.methods) {
-        $model[methodName] = buildFunc(this, options.methods[methodName], $super);
-      }
       $class.ch = baseCh.channel(options.name);
+      for(methodName in options.instanceMethods) {
+        $model[methodName] = buildFunc(this, options.instanceMethods[methodName], $super);
+      }
+      var methodName;
+      for(i in options.instanceProxies) {
+        methodName = options.instanceProxies[i]; 
+        $model[methodName] = function() {
+          args = Array.prototype.slice.call(arguments, 0);
+          done = args.pop();
+          $class.ch.onmessage = function(e) {
+            done(null, e.data);
+          }
+          $class.ch.send(toJSON([methodName, args]));
+        }
+      }
     });
   };
   
   var BaseModel = P(function BaseModel($model, $super, $class, $superclass) {
-    $model.save = function() {
-      console.log('saved');
-    }
     $class.find = function(where, options, findDone) {
       var self = this;
       this.send('find', [where, options], function(data) {
