@@ -15,10 +15,7 @@ var models = {
     _models.forEach(function(model) {
       models._add(model);
     });
-    // wait for next tick so subchannels are established
-    setTimeout(function() {
-      models.onReady.dispatch(models);
-    }, 0);
+    models.onReady.dispatch(models);
   }
 
   models._add = function(options) {
