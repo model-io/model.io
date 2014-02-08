@@ -10,8 +10,6 @@ var models = {
 
   // Create basic channel to recive models
   var modelCh = baseCh.channel('_model');
-  //FIXME channel must be created upfront, maybe a bug in WebSocketMultiplex?
-  baseCh.channel('Dog');
   modelCh.onmessage = function(e) {
     _models = fromJSON(e.data);
     _models.forEach(function(model) {

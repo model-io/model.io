@@ -65,7 +65,7 @@ var WebSocketMultiplex = (function(){
             that.emit('open');
         };
         if(ws.readyState > 0) {
-            setTimeout(onopen, 0);
+            onopen();
         } else {
             this.ws.addEventListener('open', onopen);
         }
