@@ -64,20 +64,18 @@ function ModelIOServer(app, _models) {
   pushModels(_.map(models, function(Model, name) {
     Model.ch = baseCh.registerChannel(name);
     Model.ch.on('connection', function(conn) {
-      conn.on('data', function(message) {
-        message = fromJSON(message);
-        var name = message[0];
-        var args = message[1];
+      conn.on('data', function(e) {
+        e = fromJSON(e);
+        var args = e.args;
+        // TODO use current user
         var user = 'Dude';
         args.unshift(user);
         args.push(function(err, res) {
-          conn.write(toJSON({
-            err: err,
-            res: res
-          }));
+          conn.write(toJSON({err: err, res: res}));
         });
+        // TODO fetch 'right' instance
         var instance = new Model();
-        instance[name].apply(instance, args);
+        instance[e.name].apply(instance, args);
       });
     });
     return {
