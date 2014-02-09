@@ -35,7 +35,7 @@ var models = {
             e = fromJSON(e.data);
             done(e.err, e.res);
           }
-          $class.ch.send(toJSON({name: methodName, args: args}));
+          $class.ch.send(toJSON({name: methodName, data: this, args: args}));
         }
       }
     });

@@ -71,8 +71,10 @@ function ModelIOServer(app, models) {
         args.push(function(err, res) {
           conn.write(toJSON({err: err, res: res}));
         });
-        // TODO fetch 'right' instance
+        // TODO load 'right' instance
+        // currently only the instance is extendet with this-data of frontend model
         var instance = new Model();
+        _.extend(instance, e.data);
         // check if method exists and is of type proxy
         if (_.isFunction(instance[e.name]) && instance[e.name].type == ModelIOServer.TYPE_PROXY) {
           // call it

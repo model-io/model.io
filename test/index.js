@@ -24,7 +24,7 @@ describe('visit', function() {
       }
 
       function fetch(user, thing, bringBack) {
-        bringBack(null, 'here is the ' + thing);
+        bringBack(null, this.name + ' fetched the ' + thing);
       }
 
       function eat(food) {
@@ -103,7 +103,7 @@ describe('visit', function() {
       expect(clientDolly.fetch).to.be.a('function');
       clientDolly.fetch('ball', function(err, thing) {
         expect(err).to.be(null);
-        expect(thing).to.eql('here is the ball');
+        expect(thing).to.eql('Dolly fetched the ball');
         done();
       });
     });
