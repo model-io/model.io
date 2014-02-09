@@ -37,9 +37,10 @@ function superClassName(model, models) {
 }
 
 function instanceMethods(model) {
-  return _(model.p).omit(function(method, name) {
-    return name.match(/constructor/) ||
-           (method.type !== ModelIOServer.TYPE_PUBLIC && name !== 'init');
+  return _(model.prototype).pick(function(method, name) {
+    return model.prototype.hasOwnProperty(name) &&
+           !name.match(/constructor/) &&
+           (method.type === ModelIOServer.TYPE_PUBLIC || name === 'init');
   }).map(function(method, name) {
     return [name, method.toString()];
   }).object().valueOf();
@@ -47,7 +48,8 @@ function instanceMethods(model) {
 
 function instanceProxies(model) {
   return _(model.p).pick(function(method, name) {
-    return method.type === ModelIOServer.TYPE_PROXY
+    return model.prototype.hasOwnProperty(name) &&
+           method.type === ModelIOServer.TYPE_PROXY
   }).keys().valueOf();
 }
 

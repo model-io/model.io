@@ -69,6 +69,25 @@ describe('visit', function() {
     expect(clientModels).to.have.property('Chihuahua');
   });
 
+  it('should exist only methods according model, not directly on inherited', function() {
+    expect(clientModels).to.have.property('Chihuahua');
+    expect(clientModels).to.have.property('BlackChihuahua');
+    expect(clientModels.Chihuahua.prototype.hasOwnProperty('bark')).to.be.ok();
+    // functions should exists in the prototype chain ...
+    expect(clientModels.BlackChihuahua.prototype.bark).to.be.a('function');
+    expect(clientModels.BlackChihuahua.prototype.fetch).to.be.a('function');
+    // but not directly on the inherited models
+    expect(clientModels.BlackChihuahua.prototype.hasOwnProperty('bark')).to.not.be.ok();
+    expect(clientModels.BlackChihuahua.prototype.hasOwnProperty('fetch')).to.not.be.ok();
+  });
+
+  it('should exist only methods according model, not directly on inherited', function() {
+    expect(clientModels).to.have.property('Chihuahua');
+    expect(clientModels).to.have.property('BlackChihuahua');
+    expect(clientModels.Chihuahua.prototype).to.have.property('bark');
+    expect(clientModels.BlackChihuahua.prototype.hasOwnProperty('bark')).to.not.be.ok();
+  });
+
   it('should be possible to instantiate models', function() {
     var chichi = new clientModels.Chihuahua();
     expect(chichi.bark).to.be.a('function');
