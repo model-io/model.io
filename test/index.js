@@ -19,6 +19,8 @@ describe('visit', function() {
         _.extend(this, data);
       };
 
+      /********* Instance methods *******/
+
       function bark(sound) {
         return this.name + ' says: ' + sound || 'wufff!';
       }
@@ -37,6 +39,24 @@ describe('visit', function() {
       $model.eat.type = serverIO.TYPE_PRIVATE;
       $model.fetch = fetch;
       $model.fetch.type = serverIO.TYPE_PROXY;
+
+      /********* Class methods *******/
+
+      function numberOfLegs() {
+        return 4;
+      }
+
+      function findAll(user, findAllDone) {
+        findAllDone(null, [
+          new $class({name: 'Dolly'}),
+          new $class({name: 'Fluffy'})
+        ]);
+      }
+
+      $class.numberOfLegs = numberOfLegs;
+      $class.numberOfLegs.type = serverIO.TYPE_PUBLIC;
+      $class.findAll = findAll;
+      $class.findAll.type = serverIO.TYPE_PROXY;
     });
 
     models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
@@ -97,27 +117,28 @@ describe('visit', function() {
   });
 
   describe('public instance methods', function() {
-    var clientDolly;
-    var serverDolly;
-
-    beforeEach(function() {
-      clientDolly = new clientModels.Dog({name: 'Dolly'});
-      serverDolly = new models.Dog({name: 'Dolly'});
-    });
-
-    it('should be possible to call public methods', function() {
+    it('should be callable', function() {
+      var clientDolly = new clientModels.Dog({name: 'Dolly'});
+      var serverDolly = new models.Dog({name: 'Dolly'});
       expect(clientDolly instanceof clientModels.Dog).to.be.ok();
       expect(clientDolly.bark('wrrrrrrrr!')).to.be(serverDolly.bark('wrrrrrrrr!'))
     });
+  });
 
-    it('should not be possible to call non-public methods', function() {
+  describe('private instance methods', function() {
+    it('shouldn\'t be callable', function() {
+      var clientDolly = new clientModels.Dog({name: 'Dolly'});
+      var serverDolly = new models.Dog({name: 'Dolly'});
       expect(clientDolly instanceof clientModels.Dog).to.be.ok();
       expect(clientDolly.eat).to.be(undefined);
       expect(serverDolly.eat).to.be.a('function');
       expect(serverDolly.eat()).to.be('Dolly eats tasty meat.');
     });
+  });
 
-    it('should not be possible to call proxy methods', function(done) {
+  describe('proxy instance methods', function() {
+    it('should be callable', function(done) {
+      var clientDolly = new clientModels.Dog({name: 'Dolly'});
       expect(clientDolly instanceof clientModels.Dog).to.be.ok();
       expect(clientDolly.fetch).to.be.a('function');
       clientDolly.fetch('ball', function(err, thing) {
@@ -125,6 +146,13 @@ describe('visit', function() {
         expect(thing).to.eql('Dolly fetched the ball');
         done();
       });
+    });
+  });
+
+  describe('public class methods', function() {
+    it('should be possible to call', function() {
+      expect(clientModels.Dog.numberOfLegs).to.be.a('function');
+      expect(clientModels.Dog.numberOfLegs()).to.be(4);
     });
   });
 

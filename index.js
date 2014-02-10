@@ -16,12 +16,6 @@ function pushModels(models) {
   });
 }
 
-function classProperties(model) {
-  return {
-    superClassName: model.superClassName
-  };
-}
-
 function superClasses(model, models) {
   model.superClasses = model.superClasses || _.pick(models, function(parent) {
     return model.prototype instanceof parent;
@@ -47,10 +41,25 @@ function instanceMethods(model) {
 }
 
 function instanceProxies(model) {
-  return _(model.p).pick(function(method, name) {
+  return _(model.prototype).pick(function(method, name) {
     return model.prototype.hasOwnProperty(name) &&
            method.type === ModelIOServer.TYPE_PROXY
   }).keys().valueOf();
+}
+
+function classProperties(model) {
+  return {
+    superClassName: model.superClassName
+  };
+}
+
+function classMethods(model) {
+  return _(model).pick(function(method, name) {
+    return model.hasOwnProperty(name) &&
+           method.type === ModelIOServer.TYPE_PUBLIC;
+  }).map(function(method, name) {
+    return [name, method.toString()];
+  }).object().valueOf();
 }
 
 function ModelIOServer(app, models) {
@@ -90,6 +99,7 @@ function ModelIOServer(app, models) {
       name: name,
       superClassName: superClassName(Model, models),
       classProperties: classProperties(Model),
+      classMethods:    classMethods(Model),
       instanceMethods: instanceMethods(Model),
       instanceProxies: instanceProxies(Model)
     };

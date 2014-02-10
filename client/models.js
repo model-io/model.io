@@ -20,10 +20,13 @@ var models = {
 
   models._add = function(options) {
     var Super = models[options.superClassName] || Object;
-    models[options.name] = P(Super, function Model($model, $super, $class, $superclass) {
+    models[options.name] = P(Super, function Model($model, $super, $class, $superClass) {
       $class.ch = baseCh.channel(options.name);
       for(methodName in options.instanceMethods) {
         $model[methodName] = buildFunc(this, options.instanceMethods[methodName], $super);
+      }
+      for(methodName in options.classMethods) {
+        $class[methodName] = buildFunc(this, options.classMethods[methodName], $superClass, '$superClass');
       }
       var methodName;
       for(i in options.instanceProxies) {
@@ -40,7 +43,8 @@ var models = {
       }
     });
   };
-  function buildFunc(thisPointer, code, $super) {
-    return Function('$super', 'return ' + code).call(thisPointer, $super);
+
+  function buildFunc(thisPointer, code, $super, superVarName) {
+    return Function(superVarName || '$super', 'return ' + code).call(thisPointer, $super);
   }
 })();
