@@ -28,6 +28,9 @@ var models = {
       for(methodName in options.classMethods) {
         $class[methodName] = buildFunc(this, options.classMethods[methodName], $superClass, '$superClass');
       }
+      for(propertyName in options.classProperties) {
+        $class[propertyName] = options.classProperties[propertyName];
+      }
       var methodName;
       for(i in options.instanceProxies) {
         methodName = options.instanceProxies[i]; 

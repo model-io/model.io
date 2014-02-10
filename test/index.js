@@ -40,7 +40,7 @@ describe('visit', function() {
       $model.fetch = fetch;
       $model.fetch.type = serverIO.TYPE_PROXY;
 
-      /********* Class methods *******/
+      /********* Class attributes *******/
 
       function numberOfLegs() {
         return 4;
@@ -53,8 +53,22 @@ describe('visit', function() {
         ]);
       }
 
-      $class.numberOfLegs = numberOfLegs;
-      $class.numberOfLegs.type = serverIO.TYPE_PUBLIC;
+      function isSupspecyOf(klass) {
+        return klass == 'mammel'; //oversimplified ;)
+      }
+
+      $class.numberOfLegs = 4; // public by default
+      $class.numberOfEars = {
+        value: 2,
+        type: serverIO.TYPE_PUBLIC
+      };
+      $class.numberOfEyes = {
+        value: 2,
+        type: serverIO.TYPE_PRIVATE
+      }
+
+      $class.isSupspecyOf = isSupspecyOf;
+      $class.isSupspecyOf.type = serverIO.TYPE_PUBLIC;
       $class.findAll = findAll;
       $class.findAll.type = serverIO.TYPE_PROXY;
     });
@@ -149,10 +163,20 @@ describe('visit', function() {
     });
   });
 
+  describe('public class properties', function() {
+    it('should be possible to get', function() {
+      expect(clientModels.Dog.numberOfLegs).to.be(4);
+      expect(clientModels.Dog.numberOfEars).to.be(2);
+      expect(clientModels.Dog.numberOfEyes).to.be(undefined);
+      expect(models.Dog.numberOfEyes.value).to.be(2);
+    });
+  });
+
   describe('public class methods', function() {
     it('should be possible to call', function() {
-      expect(clientModels.Dog.numberOfLegs).to.be.a('function');
-      expect(clientModels.Dog.numberOfLegs()).to.be(4);
+      expect(clientModels.Dog.isSupspecyOf).to.be.a('function');
+      expect(clientModels.Dog.isSupspecyOf('mammel')).to.be(true);
+      expect(clientModels.Dog.isSupspecyOf('fish')).to.be(false);
     });
   });
 

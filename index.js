@@ -47,15 +47,25 @@ function instanceProxies(model) {
   }).keys().valueOf();
 }
 
+function isPrimitive(thing) {
+  return _.isNumber(thing) || _.isBoolean(thing) || _.isString(thing) || _.isRegExp(thing);
+}
+
 function classProperties(model) {
-  return {
-    superClassName: model.superClassName
-  };
+  return _(model).pick(function(property, name) {
+    return model.hasOwnProperty(name) && (
+             (_.isPlainObject(property) && property.type === ModelIOServer.TYPE_PUBLIC) ||
+             isPrimitive(property)
+           );
+  }).map(function(property, name) {
+    return [name, _.has(property, 'value') ? property.value : property];
+  }).object().valueOf();
 }
 
 function classMethods(model) {
   return _(model).pick(function(method, name) {
     return model.hasOwnProperty(name) &&
+           _.isFunction(method) &&
            method.type === ModelIOServer.TYPE_PUBLIC;
   }).map(function(method, name) {
     return [name, method.toString()];
