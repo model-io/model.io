@@ -31,9 +31,10 @@ Whats already working:
 Roadmap
 -------
 
-* Add class methods in same style as instance methods
+* Add "class" methods in same style as instance methods
 * Pub/sub on model events
 * pub/sub on collection events
+* pub/sub on "class" propery changes
 * middleware plugin architecture
 * auto sync models
 * using local storage for caching model code
