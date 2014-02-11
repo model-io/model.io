@@ -72,6 +72,15 @@ function classMethods(model) {
   }).object().valueOf();
 }
 
+function classProxies(model) {
+  return _(model).pick(function(method, name) {
+    return model.hasOwnProperty(name) &&
+           _.isFunction(method) &&
+           method.type === ModelIOServer.TYPE_PROXY
+  }).keys().valueOf();
+}
+
+
 function ModelIOServer(app, models) {
   var server;
   if (app.callback) {
@@ -92,6 +101,11 @@ function ModelIOServer(app, models) {
         args.push(function(err, res) {
           conn.write(toJSON({err: err, res: res}));
         });
+        // check if class proxy is called
+        if (_.isFunction(Model[e.name]) && Model[e.name].type == ModelIOServer.TYPE_PROXY) {
+          // call it
+          return Model[e.name].apply(Model, args);
+        }
         // TODO load 'right' instance
         // currently only the instance is extendet with this-data of frontend model
         var instance = new Model();
@@ -107,11 +121,12 @@ function ModelIOServer(app, models) {
     });
     return {
       name: name,
-      superClassName: superClassName(Model, models),
+      superClassName:  superClassName(Model, models),
+      instanceMethods: instanceMethods(Model),
+      instanceProxies: instanceProxies(Model),
       classProperties: classProperties(Model),
       classMethods:    classMethods(Model),
-      instanceMethods: instanceMethods(Model),
-      instanceProxies: instanceProxies(Model)
+      classProxies:    classProxies(Model)
     };
   }));
   return server;

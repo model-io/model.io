@@ -180,6 +180,20 @@ describe('visit', function() {
     });
   });
 
+  describe('public class proxies', function() {
+    it('should be possible to call', function(done) {
+      expect(clientModels.Dog.findAll).to.be.a('function');
+      clientModels.Dog.findAll(function(err, dogs) {
+        expect(err).to.be.null;
+        expect(dogs.length).to.be.above(0);
+        // TODO this still not works. Server side instances are still flat objects at the frontend.
+        // Maybe the type has to be checkt and flagged on server side
+        //expect(dogs[0]).to.be.a(clientModels.Dog)
+        done();
+      });
+    });
+  });
+
   after(function() {
     server.close();
   });

@@ -33,21 +33,31 @@ var models = {
       }
       var methodName;
       for(i in options.instanceProxies) {
-        methodName = options.instanceProxies[i]; 
-        $model[methodName] = function() {
-          args = Array.prototype.slice.call(arguments, 0);
-          done = args.pop();
-          $class.ch.onmessage = function(e) {
-            e = fromJSON(e.data);
-            done(e.err, e.res);
-          }
-          $class.ch.send(toJSON({name: methodName, data: this, args: args}));
-        }
+        methodName = options.instanceProxies[i];
+        $model[methodName] = buildProxy(methodName, $class.ch);
+      }
+      for(i in options.classProxies) {
+        methodName = options.classProxies[i];
+        $class[methodName] = buildProxy(methodName, $class.ch);
       }
     });
   };
 
   function buildFunc(thisPointer, code, $super, superVarName) {
     return Function(superVarName || '$super', 'return ' + code).call(thisPointer, $super);
+  }
+
+  function buildProxy(name, channel) {
+    return function() {
+      args = Array.prototype.slice.call(arguments, 0);
+      done = args.pop();
+      channel.onmessage = function(e) {
+        e = fromJSON(e.data);
+        done(e.err, e.res);
+      }
+      // TODO Check, whats inside `data` when calling a class proxy
+      // Maybe we should change handling here or build an own channel for class proxies
+      channel.send(toJSON({name: name, data: this, args: args}));
+    }
   }
 })();
