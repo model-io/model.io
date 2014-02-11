@@ -22,7 +22,7 @@ Whats already working:
 * Allow running a `find`-Operation throught the websocket.
 * Auto-Rebuild inheritance chain of backend in frontend using prototype inheritance (with minimal syntactic sugar of [p.js](https://github.com/jayferd/pjs))
 * Test suite using [zombie.js](http://zombie.labnotes.org/)
-* Allow to add instance methods with differnt types
+* Allow to add instance and "class" methods with differnt types
   * **public**: method is available in front- and backend
   * **proxy**: method is available in front- and backend, but will be evaluated in backend and must therefore be asyncron. Request and result is transfered over websocket.
   * **private**: method is only available in backend
@@ -31,10 +31,10 @@ Whats already working:
 Roadmap
 -------
 
-* Add "class" methods in same style as instance methods
 * Pub/sub on model events
 * pub/sub on collection events
 * pub/sub on "class" propery changes
+* return promises when calling proxies
 * middleware plugin architecture
 * auto sync models
 * using local storage for caching model code
