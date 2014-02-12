@@ -16,6 +16,8 @@ describe('visit', function() {
 
     models.Dog = p(function($model, $super, $class, $superclass) {
       $model.init = function(data) {
+        // TODO find a way to not have to anotate the prototype name
+        this.__prototypeName = 'Dog';
         _.extend(this, data);
       };
 
@@ -186,9 +188,7 @@ describe('visit', function() {
       clientModels.Dog.findAll(function(err, dogs) {
         expect(err).to.be.null;
         expect(dogs.length).to.be.above(0);
-        // TODO this still not works. Server side instances are still flat objects at the frontend.
-        // Maybe the type has to be checkt and flagged on server side
-        //expect(dogs[0]).to.be.a(clientModels.Dog)
+        expect(dogs[0]).to.be.a(clientModels.Dog)
         done();
       });
     });

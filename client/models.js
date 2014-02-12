@@ -53,11 +53,27 @@ var models = {
       done = args.pop();
       channel.onmessage = function(e) {
         e = fromJSON(e.data);
-        done(e.err, e.res);
+        done(e.err, instantiate(e.res));
       }
       // TODO Check, whats inside `data` when calling a class proxy
       // Maybe we should change handling here or build an own channel for class proxies
       channel.send(toJSON({name: name, data: this, args: args}));
     }
+  }
+
+  function instantiate(thing) {
+    switch(typeof(thing)) {
+      case 'object':
+        if(thing.__prototypeName && models[thing.__prototypeName]) {
+          thing = _.extend(new models[thing.__prototypeName](), thing);
+        }
+        //fall throught
+      case 'array':
+        // TODO Test if this recusion really works - doubt it
+        for(key in thing) {
+          thing[key] = instantiate(thing[key]);
+        }
+    }
+    return thing;
   }
 })();
