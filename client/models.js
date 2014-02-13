@@ -64,8 +64,8 @@ var models = {
   function instantiate(thing) {
     switch(typeof(thing)) {
       case 'object':
-        if(thing.__prototypeName && models[thing.__prototypeName]) {
-          thing = _.extend(new models[thing.__prototypeName](), thing);
+        if(thing._type && models[thing._type]) {
+          thing = _.extend(new models[thing._type](), thing);
         }
         //fall throught
       case 'array':

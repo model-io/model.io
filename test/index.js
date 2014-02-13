@@ -17,7 +17,7 @@ describe('visit', function() {
     models.Dog = p(function($model, $super, $class, $superclass) {
       $model.init = function(data) {
         // TODO find a way to not have to anotate the prototype name
-        this.__prototypeName = 'Dog';
+        this._type = 'Dog';
         _.extend(this, data);
       };
 
