@@ -31,6 +31,7 @@ Whats already working:
 Roadmap
 -------
 
+* Adapterstyle abstraction for inheritance
 * Pub/sub on model events
 * pub/sub on collection events
 * pub/sub on "class" propery changes
