@@ -28,6 +28,121 @@ Whats already working:
   * **private**: method is only available in backend
 
 
+Usage
+-----
+
+If you are using express, you may start with something like this:
+```
+//index.js
+var express = require('express');
+
+var app = express();
+
+app.set('views', __dirname);
+app.set('view engine', 'jade');
+
+//register client js
+app.get('/', function(req, res) {
+  res.render('index');
+});
+```
+
+First you need to add some frontend javascript to you application. Given you installed model.io via npm and your express file lives in the same folder as the `node-modules` folder, you can e. G. add a route to the model.io files like this:
+```
+app.use(express.static(__dirname + '/node_modules/model-io/client/'));
+```
+
+In your header you have to add a few files:
+
+```
+//index.jade
+html
+  head
+    script(src='lib/lodash.custom.js')
+    script(src='lib/p.js')
+    script(src='lib/signals.js')
+    script(src='lib/sock.js')
+    script(src='lib/multiplex_client.js')
+    script(src='models.js')
+```
+
+Note: These files are not minified by default. We leave this for you to decides, since noadays everyone has it's own opinions about this.
+
+Now you can build your models. In the first place we use p.js as a super tiny wrapper around prototype inheritance. We plan to make this pluggable, if you want to use another inheritance library.
+
+```
+  models = {
+    Dog: p(function($model, $super, $class, $superclass) {
+      $model.init = function(data) {
+        // TODO find a way to not have to anotate the prototype name
+        this._type = 'Dog';
+        _.extend(this, data);
+      };
+
+      /********* Instance methods *******/
+
+      function bark(sound) {
+        return this.name + ' says: ' + sound || 'wufff!';
+      }
+
+      function fetch(user, thing, bringBack) {
+        bringBack(null, this.name + ' fetched the ' + thing);
+      }
+
+      function eat(food) {
+        return this.name + ' eats tasty ' + (food || 'meat') + '.';
+      }
+
+      $model.bark = bark;
+      $model.bark.type = serverIO.TYPE_PUBLIC;
+      $model.eat = eat;
+      $model.eat.type = serverIO.TYPE_PRIVATE;
+      $model.fetch = fetch;
+      $model.fetch.type = serverIO.TYPE_PROXY;
+
+      /********* Class attributes *******/
+
+      function numberOfLegs() {
+        return 4;
+      }
+
+      function findAll(user, findAllDone) {
+        findAllDone(null, [
+          new $class({name: 'Dolly'}),
+          new $class({name: 'Fluffy'})
+        ]);
+      }
+
+      function isSupspecyOf(klass) {
+        return klass == 'mammel'; //oversimplified ;)
+      }
+
+      $class.numberOfLegs = 4; // public by default
+      $class.numberOfEars = {
+        value: 2,
+        type: serverIO.TYPE_PUBLIC
+      };
+      $class.numberOfEyes = {
+        value: 2,
+        type: serverIO.TYPE_PRIVATE
+      }
+
+      $class.isSupspecyOf = isSupspecyOf;
+      $class.isSupspecyOf.type = serverIO.TYPE_PUBLIC;
+      $class.findAll = findAll;
+      $class.findAll.type = serverIO.TYPE_PROXY;
+    })
+  }
+```
+This models is packed with nearly all the things model.io currenlty offers. There are public methods, that are available in front and backend (`dog.bark()`), private methods that are only available in backend (`dog.eat()`) and there are proxies that can be called in front and backend but are computed in the backend and must therefore be asyncron (`fetch`).
+
+Same goes for *class*-methods and attributes. If you want to see inheritance in action, refert to the test suite.
+
+Last step is to attach he socket-server to your express server:
+```
+serverIO(app, models).listen(3000);
+```
+
 Roadmap
 -------
 
