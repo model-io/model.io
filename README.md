@@ -103,7 +103,7 @@ expect(dolly.bark('wrrrrrrrwaf')).to.be('Dolly says: wrrrrrrrwaf');
 
 Roadmap
 -------
-
+* Add uuid to track instances
 * Adapterstyle abstraction for inheritance
 * Pub/sub on model events
 * pub/sub on collection events
