@@ -26,7 +26,7 @@ Whats already working:
   * **public**: method is available in front- and backend
   * **proxy**: method is available in front- and backend, but will be evaluated in backend and must therefore be asyncron. Request and result is transfered over websocket.
   * **private**: method is only available in backend
-
+* use uuid to track instances
 
 Usage
 -----
@@ -103,7 +103,7 @@ expect(dolly.bark('wrrrrrrrwaf')).to.be('Dolly says: wrrrrrrrwaf');
 
 Roadmap
 -------
-* Add uuid to track instances
+
 * Adapterstyle abstraction for inheritance
 * Pub/sub on model events
 * pub/sub on collection events
