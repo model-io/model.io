@@ -86,7 +86,7 @@ Now you can build your models. In the first place we use p.js as a super tiny wr
     })
   }
 ```
-This models the most simple thing of model.io: A public method that is available in front and backend (`dog.bark()`)
+This model is the most simplest thing of model.io: A public method that is available in front and backend (`dog.bark()`)
 **model.io** has much more to offer: private methods, that are only available in backend and proxy methods that are available in both front and backed but are computed in backend only. Call and result is transfered over websocket communication. Also you can created methods on "classes" direcly (e. G. *finders*). Also you can use inheritance to abstract common things away. If you want to see all this in action, refert to the test suite.
 
 Last step is to attach he socket-server to your express server:
