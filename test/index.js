@@ -28,27 +28,22 @@ describe('visit', function() {
       function bark(sound) {
         return this.name + ' says: ' + sound || 'wufff!';
       }
+      $model.bark = bark;
+      $model.bark.type = serverIO.TYPE_PUBLIC;
 
       function fetch(user, thing, bringBack) {
         bringBack(null, this.name + ' fetched the ' + thing);
       }
+      $model.fetch = fetch;
+      $model.fetch.type = serverIO.TYPE_PROXY;
 
       function eat(food) {
         return this.name + ' eats tasty ' + (food || 'meat') + '.';
       }
-
-      $model.bark = bark;
-      $model.bark.type = serverIO.TYPE_PUBLIC;
       $model.eat = eat;
       $model.eat.type = serverIO.TYPE_PRIVATE;
-      $model.fetch = fetch;
-      $model.fetch.type = serverIO.TYPE_PROXY;
 
       /********* Class attributes *******/
-
-      function numberOfLegs() {
-        return 4;
-      }
 
       function findAll(user, findAllDone) {
         var dolly = new $class({name: 'Dolly'});
@@ -59,25 +54,26 @@ describe('visit', function() {
         ]
         findAllDone(null, [dolly, fluffy]);
       }
+      $class.findAll = findAll;
+      $class.findAll.type = serverIO.TYPE_PROXY;
 
       function isSupspecyOf(klass) {
         return klass == 'mammel'; //oversimplified ;)
       }
+      $class.isSupspecyOf = isSupspecyOf;
+      $class.isSupspecyOf.type = serverIO.TYPE_PUBLIC;
 
       $class.numberOfLegs = 4; // public by default
+
       $class.numberOfEars = {
         value: 2,
         type: serverIO.TYPE_PUBLIC
       };
+
       $class.numberOfEyes = {
         value: 2,
         type: serverIO.TYPE_PRIVATE
       }
-
-      $class.isSupspecyOf = isSupspecyOf;
-      $class.isSupspecyOf.type = serverIO.TYPE_PUBLIC;
-      $class.findAll = findAll;
-      $class.findAll.type = serverIO.TYPE_PROXY;
     });
 
     models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
