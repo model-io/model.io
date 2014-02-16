@@ -2,6 +2,7 @@ var _ = require('lodash');
 var Browser = require('zombie');
 var expect = require('expect.js');
 var p = require('pjs').P;
+var uuid = require('node-uuid');
 
 var app = require('./server/app');
 var serverIO = require('../');
@@ -15,10 +16,11 @@ describe('visit', function() {
   before(function(done) {
 
     models.Dog = p(function($model, $super, $class, $superclass) {
-      $model.init = function(data) {
+      $model.init = function(data, id) {
         // TODO find a way to not have to anotate the prototype name
         this._type = 'Dog';
         _.extend(this, data);
+        this._id = id || uuid.v4(); //to track instances
       };
 
       /********* Instance methods *******/
@@ -49,10 +51,13 @@ describe('visit', function() {
       }
 
       function findAll(user, findAllDone) {
-        findAllDone(null, [
-          new $class({name: 'Dolly'}),
-          new $class({name: 'Fluffy'})
-        ]);
+        var dolly = new $class({name: 'Dolly'});
+        var fluffy = new $class({name: 'Fluffy'});
+        dolly.friends = [
+          new $class({name: 'Rondo'}), //to test nested instances
+          fluffy //to test references
+        ]
+        findAllDone(null, [dolly, fluffy]);
       }
 
       function isSupspecyOf(klass) {
@@ -189,6 +194,24 @@ describe('visit', function() {
         expect(err).to.be.null;
         expect(dogs.length).to.be.above(0);
         expect(dogs[0]).to.be.a(clientModels.Dog)
+        done();
+      });
+    });
+    it('should instatiate nested models correctly', function(done) {
+      clientModels.Dog.findAll(function(err, dogs) {
+        expect(dogs[0].friends.length).to.be.above(0);
+        expect(dogs[0].friends[0]).to.be.a(clientModels.Dog);
+        expect(dogs[0].friends[0].name).to.be('Rondo');
+        done();
+      });
+    });
+    it('should track references correctly', function(done) {
+      clientModels.Dog.findAll(function(err, dogs) {
+        expect(dogs[0].friends.length).to.be.above(0);
+        expect(dogs[0].friends[1]).to.be.a(clientModels.Dog);
+        expect(dogs[0].friends[1].name).to.be('Fluffy');
+        expect(dogs[1].name).to.be('Fluffy');
+        expect(dogs[1]).to.be(dogs[0].friends[1]);
         done();
       });
     });

@@ -1,3 +1,7 @@
+// we currently don't need uuid generation in frontend so we have to stub it.
+var uuid = {};
+uuid.v1 = uuid.v4 = function() {};
+
 var models = {
   onReady: new signals.Signal()
 };
@@ -61,17 +65,18 @@ var models = {
     }
   }
 
-  function instantiate(thing) {
+  function instantiate(thing, instances) {
+    instances = instances || {};
     switch(typeof(thing)) {
       case 'object':
         if(thing._type && models[thing._type]) {
-          thing = _.extend(new models[thing._type](), thing);
+          thing = instances[thing._id] = instances[thing._id] || _.extend(new models[thing._type](thing, thing._id), thing);
         }
         //fall throught
       case 'array':
         // TODO Test if this recusion really works - doubt it
         for(key in thing) {
-          thing[key] = instantiate(thing[key]);
+          thing[key] = instantiate(thing[key], instances);
         }
     }
     return thing;
