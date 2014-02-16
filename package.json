@@ -27,7 +27,8 @@
     "pjs": "~5.0.0",
     "monk": "~0.7.1",
     "js-schema": "~0.6.2",
-    "node-uuid": "~1.4.1"
+    "node-uuid": "~1.4.1",
+    "simple-lru-cache": "0.0.1"
   },
   "devDependencies": {
     "mocha": "~1.17.1",

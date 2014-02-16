@@ -3,6 +3,7 @@ var Browser = require('zombie');
 var expect = require('expect.js');
 var p = require('pjs').P;
 var uuid = require('node-uuid');
+var Cache = require('simple-lru-cache');
 
 var app = require('./server/app');
 var serverIO = require('../');

@@ -11,6 +11,7 @@ var models = {
   var baseCh = new WSM(new SockJS('/ws'));
   var toJSON = JSON.stringify;
   var fromJSON = JSON.parse;
+  var instances = new Cache(1000);
 
   // Create basic channel to recive models
   var modelCh = baseCh.channel('_model');
@@ -65,14 +66,19 @@ var models = {
     }
   }
 
-  function instantiate(thing, instances) {
-    instances = instances || {};
+  function instantiate(thing) {
     switch(typeof(thing)) {
       case 'object':
         if(thing._type && models[thing._type]) {
-          thing = instances[thing._id] = instances[thing._id] || _.extend(new models[thing._type](thing, thing._id), thing);
+          var cachedThing = instances.get(thing._id)
+          if ('undefined' == typeof cachedThing) {
+            thing = _.extend(new models[thing._type](thing, thing._id), thing);
+            instances.set(thing._id, thing);
+          } else {
+            thing = cachedThing;
+          }
         }
-        //fall throught
+        //fall throught!
       case 'array':
         // TODO Test if this recusion really works - doubt it
         for(key in thing) {
