@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var http = require('http');
 var sockjs = require('sockjs');
+var Signal = require('signals');
 var WSM = require('websocket-multiplex').MultiplexServer;
 
 var ws = sockjs.createServer();
@@ -80,6 +81,12 @@ function classProxies(model) {
   }).keys().valueOf();
 }
 
+function classSignals(model) {
+  return _(model).pick(function(method, name) {
+    return model.hasOwnProperty(name) &&
+           method instanceof Signal
+  }).keys().valueOf();
+}
 
 function ModelIOServer(app, models) {
   var server;
@@ -126,7 +133,8 @@ function ModelIOServer(app, models) {
       instanceProxies: instanceProxies(Model),
       classProperties: classProperties(Model),
       classMethods:    classMethods(Model),
-      classProxies:    classProxies(Model)
+      classProxies:    classProxies(Model),
+      classSignals:    classSignals(Model)
     };
   }));
   return server;

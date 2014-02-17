@@ -44,6 +44,10 @@ var models = {
         methodName = options.classProxies[i];
         $class[methodName] = buildProxy(methodName, $class.ch);
       }
+      for(i in options.classSignals) {
+        signalName = options.classSignals[i];
+        $class[signalName] = new signals();
+      }
     });
   };
 

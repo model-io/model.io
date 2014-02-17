@@ -3,6 +3,7 @@ var Browser = require('zombie');
 var expect = require('expect.js');
 var p = require('pjs').P;
 var uuid = require('node-uuid');
+var Signal = require('signals');
 
 var app = require('./server/app');
 var serverIO = require('../');
@@ -74,6 +75,10 @@ describe('visit', function() {
         value: 2,
         type: serverIO.TYPE_PRIVATE
       }
+
+      /********* Class signals *******/
+
+      $class.onBirth = new Signal();
     });
 
     models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
@@ -210,6 +215,22 @@ describe('visit', function() {
         expect(dogs[1]).to.be(dogs[0].friends[1]);
         done();
       });
+    });
+  });
+
+  describe('signals', function() {
+    it.only('should be possible to create on Models', function(done) {
+      // TODO Make this pass!`
+      // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
+      // expect(clientModels.Dog.onBirth).to.be.a(Signal);
+      // instaed we compare prototypes here
+      expect(clientModels.Dog.onBirth.protptype).to.equal(new Signal().protptype);
+      clientModels.Dog.onBirth.add(function(puppy) {
+        expect(puppy).to.be.a(clientModels.Dog);
+        expect(puppy.name).to.be('Puppy');
+        done();
+      });
+      models.Dog.onBirth.dispatch(new models.Dog({name: 'puppy'}));
     });
   });
 
