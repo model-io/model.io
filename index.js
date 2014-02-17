@@ -81,10 +81,21 @@ function classProxies(model) {
   }).keys().valueOf();
 }
 
-function classSignals(model) {
+function classSignals(model, modelName) {
   return _(model).pick(function(method, name) {
     return model.hasOwnProperty(name) &&
            method instanceof Signal
+  }).tap(function(signals) {
+    // create channel
+    _.each(signals, function(signal, name) {
+      var channel = baseCh.registerChannel(modelName + ':signals:' + name);
+      channel.on('connection', function(conn) {
+        // attach server side events
+        signal.add(function(data) {
+          conn.write(toJSON(data));
+        });
+      });
+    });
   }).keys().valueOf();
 }
 
@@ -134,7 +145,7 @@ function ModelIOServer(app, models) {
       classProperties: classProperties(Model),
       classMethods:    classMethods(Model),
       classProxies:    classProxies(Model),
-      classSignals:    classSignals(Model)
+      classSignals:    classSignals(Model, name)
     };
   }));
   return server;

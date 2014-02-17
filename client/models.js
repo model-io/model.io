@@ -45,8 +45,14 @@ var models = {
         $class[methodName] = buildProxy(methodName, $class.ch);
       }
       for(i in options.classSignals) {
-        signalName = options.classSignals[i];
-        $class[signalName] = new signals();
+        var signal = new signals();
+        var signalName = options.classSignals[i];
+        var ch = baseCh.channel(options.name + ':signals:' + signalName);
+        ch.onmessage = function(e) {
+          e = fromJSON(e.data);
+          signal.dispatch(instantiate(e));
+        }
+        $class[signalName] = signal;
       }
     });
   };

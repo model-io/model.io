@@ -219,18 +219,20 @@ describe('visit', function() {
   });
 
   describe('signals', function() {
-    it.only('should be possible to create on Models', function(done) {
-      // TODO Make this pass!`
-      // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
-      // expect(clientModels.Dog.onBirth).to.be.a(Signal);
-      // instaed we compare prototypes here
-      expect(clientModels.Dog.onBirth.protptype).to.equal(new Signal().protptype);
-      clientModels.Dog.onBirth.add(function(puppy) {
-        expect(puppy).to.be.a(clientModels.Dog);
-        expect(puppy.name).to.be('Puppy');
-        done();
+    describe('fired serverside', function() {
+      it('should be fired also client side', function(done) {
+        // TODO Make this pass!`
+        // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
+        // expect(clientModels.Dog.onBirth).to.be.a(Signal);
+        // instaed we compare prototypes here
+        expect(clientModels.Dog.onBirth.prototype).to.not.be(null).and.to.equal(new Signal().prototype);
+        clientModels.Dog.onBirth.add(function(puppy) {
+          expect(puppy).to.be.a(clientModels.Dog);
+          expect(puppy.name).to.be('Puppy');
+          done();
+        });
+        models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
       });
-      models.Dog.onBirth.dispatch(new models.Dog({name: 'puppy'}));
     });
   });
 
