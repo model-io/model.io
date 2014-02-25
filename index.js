@@ -2,18 +2,16 @@ var _ = require('lodash');
 var http = require('http');
 var sockjs = require('sockjs');
 var Signal = require('signals');
-var WSM = require('websocket-multiplex').MultiplexServer;
+var Channel = require('sock-channels');
 
 var ws = sockjs.createServer();
-var baseCh = new WSM(ws);
-var toJSON = JSON.stringify;
-var fromJSON = JSON.parse;
-
-var modelCh = baseCh.registerChannel('_model');
+var baseCh = new Channel(ws, 'model.io');
+var modelCh = baseCh.sub('model');
+var models;
 
 function pushModels(models) {
-  modelCh.on('connection', function(conn) {
-    conn.write(toJSON(models));
+  modelCh.onConnect.add(function(conn) {
+    conn.write(modelCh, models);
   });
 }
 
@@ -42,10 +40,25 @@ function instanceMethods(model) {
 }
 
 function instanceProxies(model) {
-  return _(model.prototype).pick(function(method, name) {
+  var proxies = _(model.prototype).pick(function(method, name) {
     return model.prototype.hasOwnProperty(name) &&
            method.type === ModelIOServer.TYPE_PROXY
   }).keys().valueOf();
+  _.each(proxies, function(name) {
+    var proxyCh = model.ch.sub('instanceProxy').sub(name)
+    proxyCh.onData.add(function(conn, transport) {
+      var args = transport.args;
+      args.push(function(err, res) {
+        proxyCh.write(conn, {err: err, res: res});
+      });
+      // TODO load 'right' instance
+      // currently only the instance is extendet with this-data of frontend model
+      var instance = new model();
+      _.extend(instance, transport.data);
+      return instance[name].apply(instance, args);
+    });
+  });
+  return proxies;
 }
 
 function isPrimitive(thing) {
@@ -88,19 +101,24 @@ function classSignals(model, modelName) {
   }).tap(function(signals) {
     // create channel
     _.each(signals, function(signal, name) {
-      var channel = baseCh.registerChannel(modelName + ':signals:' + name);
-      channel.on('connection', function(conn) {
+      var channel = modelCh.sub(modelName).sub('signal').sub(name);
+      channel.onConnect.add(function(conn) {
         // attach server side events
-        signal.add(function(data) {
-          conn.write(toJSON(data));
+        signal.add(conn.write);
+        conn.onData.add(function(data) {
+          // FIXME leads to stack overflow!
+          //signal.remove(conn.write);
+          //signal.dispatch(instantiate(data));
+          //signal.add(conn.write);
         });
       });
     });
   }).keys().valueOf();
 }
 
-function ModelIOServer(app, models) {
+function ModelIOServer(app, _models) {
   var server;
+  models = _models;
   if (app.callback) {
     server = http.Server(app.callback());
   } else {
@@ -108,35 +126,7 @@ function ModelIOServer(app, models) {
   }
   ws.installHandlers(server, {prefix:'/ws'});
   pushModels(_.map(models, function(Model, name) {
-    Model.ch = baseCh.registerChannel(name);
-    Model.ch.on('connection', function(conn) {
-      conn.on('data', function(e) {
-        e = fromJSON(e);
-        var args = e.args;
-        // TODO use current user
-        var user = 'Dude';
-        args.unshift(user);
-        args.push(function(err, res) {
-          conn.write(toJSON({err: err, res: res}));
-        });
-        // check if class proxy is called
-        if (_.isFunction(Model[e.name]) && Model[e.name].type == ModelIOServer.TYPE_PROXY) {
-          // call it
-          return Model[e.name].apply(Model, args);
-        }
-        // TODO load 'right' instance
-        // currently only the instance is extendet with this-data of frontend model
-        var instance = new Model();
-        _.extend(instance, e.data);
-        // check if method exists and is of type proxy
-        if (_.isFunction(instance[e.name]) && instance[e.name].type == ModelIOServer.TYPE_PROXY) {
-          // call it
-          return instance[e.name].apply(instance, args);
-        }
-        // otherwise: throw error
-        conn.write(toJSON({err: 'Method with name `' + e.name + '` is not available'}));
-      });
-    });
+    Model.ch = modelCh.sub(name);
     return {
       name: name,
       superClassName:  superClassName(Model, models),
@@ -151,8 +141,44 @@ function ModelIOServer(app, models) {
   return server;
 }
 
+// TODO DRY up! same function is in client/models.js
+function instantiate(thing, instances) {
+  instances = instances || {};
+  switch(typeof(thing)) {
+    case 'object':
+      if(thing._type && models[thing._type]) {
+        thing = instances[thing._id] = instances[thing._id] || _.extend(new models[thing._type](thing, thing._id), thing);
+      }
+      //fall throught
+    case 'array':
+      // TODO Test if this recusion really works - doubt it
+      for(var key in thing) {
+        thing[key] = instantiate(thing[key], instances);
+      }
+  }
+  return thing;
+}
+
 ModelIOServer.TYPE_PUBLIC = 'public';
 ModelIOServer.TYPE_PROXY = 'proxy';
 ModelIOServer.TYPE_PRIVATE = 'private';
 
 module.exports = ModelIOServer;
+/*
+    Model.ch.onData.add(function(conn, data) {
+      var args = data.args;
+      // TODO use current user
+      var user = 'Dude';
+      args.unshift(user);
+      args.push(function(err, res) {
+        Model.ch.write(conn, {err: err, res: res});
+      });
+      // check if class proxy is called
+      if (_.isFunction(Model[e.name]) && Model[e.name].type == ModelIOServer.TYPE_PROXY) {
+        // call it
+        return Model[e.name].apply(Model, args);
+      }
+      // otherwise: throw error
+      Model.ch.write(conn, {err: 'Method with name `' + e.name + '` is not available'});
+    });
+*/

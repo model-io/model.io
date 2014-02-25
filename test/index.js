@@ -32,7 +32,7 @@ describe('visit', function() {
       $model.bark = bark;
       $model.bark.type = serverIO.TYPE_PUBLIC;
 
-      function fetch(user, thing, bringBack) {
+      function fetch(thing, bringBack) {
         bringBack(null, this.name + ' fetched the ' + thing);
       }
       $model.fetch = fetch;
@@ -46,7 +46,7 @@ describe('visit', function() {
 
       /********* Class attributes *******/
 
-      function findAll(user, findAllDone) {
+      function findAll(findAllDone) {
         var dolly = new $class({name: 'Dolly'});
         var fluffy = new $class({name: 'Fluffy'});
         dolly.friends = [
@@ -226,12 +226,22 @@ describe('visit', function() {
         // expect(clientModels.Dog.onBirth).to.be.a(Signal);
         // instaed we compare prototypes here
         expect(clientModels.Dog.onBirth.prototype).to.not.be(null).and.to.equal(new Signal().prototype);
-        clientModels.Dog.onBirth.add(function(puppy) {
+        clientModels.Dog.onBirth.addOnce(function(puppy) {
           expect(puppy).to.be.a(clientModels.Dog);
           expect(puppy.name).to.be('Puppy');
           done();
         });
         models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
+      });
+    });
+    describe('fired clientside', function() {
+      it('should be fired also server side', function(done) {
+        models.Dog.onBirth.addOnce(function(polly) {
+          expect(polly).to.be.a(models.Dog);
+          expect(polly.name).to.be('Polly');
+          done();
+        });
+        clientModels.Dog.onBirth.dispatch('polly');
       });
     });
   });

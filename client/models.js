@@ -7,51 +7,53 @@ var models = {
 };
 
 (function() {
-  var WSM = WebSocketMultiplex;
-  var baseCh = new WSM(new SockJS('/ws'));
-  var toJSON = JSON.stringify;
-  var fromJSON = JSON.parse;
+  var baseCh = new Channel(new SockJS('/ws'), 'model.io');
 
   // Create basic channel to recive models
-  var modelCh = baseCh.channel('_model');
-  modelCh.onmessage = function(e) {
-    _models = fromJSON(e.data);
-    _models.forEach(function(model) {
+  var modelCh = baseCh.sub('model');
+  modelCh.onData.addOnce(function(data) {
+    data.forEach(function(model) {
       models._add(model);
     });
     models.onReady.dispatch(models);
-  }
+  });
 
   models._add = function(options) {
     var Super = models[options.superClassName] || Object;
     models[options.name] = P(Super, function Model($model, $super, $class, $superClass) {
-      $class.ch = baseCh.channel(options.name);
-      for(methodName in options.instanceMethods) {
+      $class.ch = modelCh.sub(options.name);
+      for(var methodName in options.instanceMethods) {
         $model[methodName] = buildFunc(this, options.instanceMethods[methodName], $super);
       }
-      for(methodName in options.classMethods) {
+      for(var methodName in options.classMethods) {
         $class[methodName] = buildFunc(this, options.classMethods[methodName], $superClass, '$superClass');
       }
-      for(propertyName in options.classProperties) {
+      for(var propertyName in options.classProperties) {
         $class[propertyName] = options.classProperties[propertyName];
       }
       var methodName;
-      for(i in options.instanceProxies) {
+      for(var i in options.instanceProxies) {
         methodName = options.instanceProxies[i];
-        $model[methodName] = buildProxy(methodName, $class.ch);
+        $model[methodName] = buildProxy(methodName, $class.ch.sub('instanceProxy'));
       }
-      for(i in options.classProxies) {
+      for(var i in options.classProxies) {
         methodName = options.classProxies[i];
-        $class[methodName] = buildProxy(methodName, $class.ch);
+        $class[methodName] = buildProxy(methodName, $class.ch.sub('classProxy'));
       }
-      for(i in options.classSignals) {
+      var signalCh = $class.ch.sub('signal');
+      for(var i in options.classSignals) {
         var signal = new signals();
         var signalName = options.classSignals[i];
-        var ch = baseCh.channel(options.name + ':signals:' + signalName);
-        ch.onmessage = function(e) {
-          e = fromJSON(e.data);
-          signal.dispatch(instantiate(e));
-        }
+        var ch = signalCh.sub(signalName);
+        var send = function(data) {
+          ch.write(data);
+        };
+        signal.add(send);
+        ch.onData.add(function(data) {
+          signal.remove(send);
+          signal.dispatch(instantiate(data));
+          signal.add(send);
+        })
         $class[signalName] = signal;
       }
     });
@@ -63,15 +65,15 @@ var models = {
 
   function buildProxy(name, channel) {
     return function() {
+      var proxyCh = channel.sub(name);
       args = Array.prototype.slice.call(arguments, 0);
       done = args.pop();
-      channel.onmessage = function(e) {
-        e = fromJSON(e.data);
-        done(e.err, instantiate(e.res));
-      }
+      proxyCh.onData.add(function(data) {
+        done(data.err, instantiate(data.res));
+      });
       // TODO Check, whats inside `data` when calling a class proxy
       // Maybe we should change handling here or build an own channel for class proxies
-      channel.send(toJSON({name: name, data: this, args: args}));
+      proxyCh.write({data: this, args: args});
     }
   }
 
@@ -85,7 +87,7 @@ var models = {
         //fall throught
       case 'array':
         // TODO Test if this recusion really works - doubt it
-        for(key in thing) {
+        for(var key in thing) {
           thing[key] = instantiate(thing[key], instances);
         }
     }
