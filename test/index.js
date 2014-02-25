@@ -206,7 +206,7 @@ describe('visit', function() {
         done();
       });
     });
-    xit('should track references correctly', function(done) {
+    it('should track references correctly', function(done) {
       clientModels.Dog.findAll(function(err, dogs) {
         expect(dogs[0].friends.length).to.be.above(0);
         expect(dogs[0].friends[1]).to.be.a(clientModels.Dog);
