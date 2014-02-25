@@ -51,7 +51,7 @@ var models = {
         signal.add(send);
         ch.onData.add(function(data) {
           signal.remove(send);
-          signal.dispatch(instantiate(data));
+          signal.dispatch.apply(signal, instantiate(data));
           signal.add(send);
         })
         $class[signalName] = signal;

@@ -117,7 +117,10 @@ function classSignals(model, modelName) {
       var channel = modelCh.sub(modelName).sub('signal').sub(name);
       channel.onConnect.add(function(conn) {
         // attach server side events
-        signal.add(conn.write);
+        signal.add(function() {
+          var args = Array.prototype.slice.call(arguments, 0);
+          conn.write(channel, args);
+        });
         conn.onData.add(function(data) {
           // FIXME leads to stack overflow!
           //signal.remove(conn.write);

@@ -220,7 +220,7 @@ describe('visit', function() {
 
   describe('signals', function() {
     describe('fired serverside', function() {
-      xit('should be fired also client side', function(done) {
+      it.only('should be fired also client side', function(done) {
         // TODO Make this pass!`
         // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
         // expect(clientModels.Dog.onBirth).to.be.a(Signal);
