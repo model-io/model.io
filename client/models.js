@@ -68,7 +68,7 @@ var models = {
       var proxyCh = channel.sub(name);
       args = Array.prototype.slice.call(arguments, 0);
       done = args.pop();
-      proxyCh.onData.add(function(data) {
+      proxyCh.onData.addOnce(function(data) {
         done(data.err, instantiate(data.res));
       });
       // TODO Check, whats inside `data` when calling a class proxy

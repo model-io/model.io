@@ -87,11 +87,24 @@ function classMethods(model) {
 }
 
 function classProxies(model) {
-  return _(model).pick(function(method, name) {
+  var proxies =  _(model).pick(function(method, name) {
     return model.hasOwnProperty(name) &&
            _.isFunction(method) &&
            method.type === ModelIOServer.TYPE_PROXY
   }).keys().valueOf();
+
+  _.each(proxies, function(name) {
+    var proxyCh = model.ch.sub('classProxy').sub(name)
+    proxyCh.onData.add(function(conn, transport) {
+      var args = transport.args;
+      args.push(function(err, res) {
+        proxyCh.write(conn, {err: err, res: res});
+      });
+      return model[name].apply(model, args);
+    });
+  });
+
+  return proxies;
 }
 
 function classSignals(model, modelName) {
