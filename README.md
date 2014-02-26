@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/model-io/model.io.png?branch=master)](https://travis-ci.org/model-io/model.io)
+[![Dependency Status](https://david-dm.org/model-io/model.io.png)](https://david-dm.org/model-io/model.io)
+
 model.io
 ========
 
