@@ -12,5 +12,3 @@ app.get('/', function(req, res) {
 });
 
 module.exports = app;
-
-//app.listen(8080);
