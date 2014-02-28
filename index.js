@@ -117,15 +117,18 @@ function classSignals(model, modelName) {
       var channel = modelCh.sub(modelName).sub('signal').sub(name);
       channel.onConnect.add(function(conn) {
         // attach server side events
-        signal.add(function() {
+        var write = function write() {
           var args = Array.prototype.slice.call(arguments, 0);
           conn.write(channel, args);
-        });
-        conn.onData.add(function(data) {
-          // FIXME leads to stack overflow!
-          //signal.remove(conn.write);
-          //signal.dispatch(instantiate(data));
-          //signal.add(conn.write);
+        };
+        signal.add(write);
+        conn.onData.add(function(transportCh, data) {
+          if (transportCh !== channel) {
+            return;
+          }
+          signal.remove(write);
+          signal.dispatch.apply(signal, instantiate(data));
+          signal.add(write);
         });
       });
     });
@@ -180,21 +183,3 @@ ModelIOServer.TYPE_PROXY = 'proxy';
 ModelIOServer.TYPE_PRIVATE = 'private';
 
 module.exports = ModelIOServer;
-/*
-    Model.ch.onData.add(function(conn, data) {
-      var args = data.args;
-      // TODO use current user
-      var user = 'Dude';
-      args.unshift(user);
-      args.push(function(err, res) {
-        Model.ch.write(conn, {err: err, res: res});
-      });
-      // check if class proxy is called
-      if (_.isFunction(Model[e.name]) && Model[e.name].type == ModelIOServer.TYPE_PROXY) {
-        // call it
-        return Model[e.name].apply(Model, args);
-      }
-      // otherwise: throw error
-      Model.ch.write(conn, {err: 'Method with name `' + e.name + '` is not available'});
-    });
-*/

@@ -45,8 +45,9 @@ var models = {
         var signal = new signals();
         var signalName = options.classSignals[i];
         var ch = signalCh.sub(signalName);
-        var send = function(data) {
-          ch.write(data);
+        var send = function() {
+          var args = Array.prototype.slice.call(arguments, 0);
+          ch.write(args);
         };
         signal.add(send);
         ch.onData.add(function(data) {
@@ -66,8 +67,8 @@ var models = {
   function buildProxy(name, channel) {
     return function() {
       var proxyCh = channel.sub(name);
-      args = Array.prototype.slice.call(arguments, 0);
-      done = args.pop();
+      var args = Array.prototype.slice.call(arguments, 0);
+      var done = args.pop();
       proxyCh.onData.addOnce(function(data) {
         done(data.err, instantiate(data.res));
       });

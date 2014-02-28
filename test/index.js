@@ -150,13 +150,13 @@ describe('model.io', function() {
       });
     });
     describe('fired clientside', function() {
-      xit('should be fired also server side', function(done) {
+      it('should be fired also server side', function(done) {
         models.Dog.onBirth.addOnce(function(polly) {
           expect(polly).to.be.a(models.Dog);
           expect(polly.name).to.be('Polly');
           done();
         });
-        clientModels.Dog.onBirth.dispatch('polly');
+        clientModels.Dog.onBirth.dispatch(new models.Dog({name: 'Polly'}));
       });
     });
   });
