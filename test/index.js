@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var async = require('async');
 var Browser = require('zombie');
 var expect = require('expect.js');
@@ -135,8 +136,9 @@ describe('model.io', function() {
   });
 
   describe('class signals', function() {
+
     describe('fired serverside', function() {
-      it.only('should be fired also client side', function(done) {
+      it('should be fired also client side', function(done) {
         // TODO Make this pass!`
         // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
         // expect(clientModels.Dog.onBirth).to.be.a(Signal);
@@ -171,6 +173,7 @@ describe('model.io', function() {
         models.Chihuahua.onBirth.dispatch(new models.Chihuahua({name: 'Puppy'}));
       });
     });
+
     describe('fired clientside', function() {
       it('should be fired also server side', function(done) {
         models.Chihuahua.onBirth.addOnce(function(polly) {
@@ -184,6 +187,12 @@ describe('model.io', function() {
         });
         clientModels.Dog.onBirth.dispatch(new models.Dog({name: 'Polly'}));
       });
+    });
+  });
+
+  afterEach(function(done) {
+    clientModels.Chihuahua.onBirth.removeAll(function() {
+      done();
     });
   });
 

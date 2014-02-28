@@ -78,10 +78,10 @@ var models = {
           ch.write('unsubscribe');
         }
 
-        signal.removeAll = function(func, done) {
+        signal.removeAll = function(done) {
           isFunction(done) && ch.onData.addOnce(done);
           ch.write('unsubscribe');
-          origRemoveAllFunc.call(signal, func);
+          origRemoveAllFunc.call(signal);
           // readd server push
           origAddFunc.call(signal, send);
         }
@@ -93,6 +93,10 @@ var models = {
           origRemoveFunc.call(signal, send);
           signal.dispatch.apply(signal, instantiate(data));
           origAddFunc.call(signal, send);
+          // unsubscribe if no one is listening anymore
+          if (signal._bindings.length <= 1) {
+            ch.write('unsubscribe');
+          }
         })
         $class[signalName] = signal;
       }
