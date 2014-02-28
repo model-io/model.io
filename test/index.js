@@ -163,15 +163,22 @@ describe('model.io', function() {
       });
 
       it('should transfer event data only if anyone is listening', function(done) {
-        clientModels.Dog.ch.sub('signal').sub('onBirth').onData.addOnce(function() {
-          done(new Error('Data should only be sended, if anyone is interested'));
+        async.parallel([
+          function(addDone) {
+            clientModels.Dog.ch.sub('signal').sub('onBirth').onData.addOnce(function() {
+              done(new Error('Data should only be sended, if anyone is interested'));
+            }, addDone);
+          }, function(addDone) {
+            clientModels.Chihuahua.onBirth.addOnce(function(polly) {
+              done();
+            }, addDone);
+          }
+        ], function() {
+          models.Dog.onBirth.dispatch(true);
+          models.Chihuahua.onBirth.dispatch(true);
         });
-        models.Chihuahua.onBirth.addOnce(function(polly) {
-          done();
-        });
-        models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
-        models.Chihuahua.onBirth.dispatch(new models.Chihuahua({name: 'Puppy'}));
       });
+
     });
 
     describe('fired clientside', function() {
