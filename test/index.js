@@ -179,6 +179,23 @@ describe('model.io', function() {
         });
       });
 
+      it('shouldn\'t stop sending stuff if not all subscribers have been detached', function(done) {
+        async.parallel([
+          function(addDone) {
+            clientModels.Chihuahua.onBirth.add(function() {
+              done();
+            }, addDone);
+          }, function(addDone) {
+            // subscribe and instantly unsubscribe
+            var emptyFunc = function(){};
+            clientModels.Chihuahua.onBirth.add(emptyFunc, function() {
+              clientModels.Chihuahua.onBirth.remove(emptyFunc, addDone);
+            }, addDone);
+          }
+        ], function() {
+          models.Chihuahua.onBirth.dispatch(new models.Chihuahua({name: 'Puppy'}));
+        });
+      });
     });
 
     describe('fired clientside', function() {

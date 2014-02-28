@@ -72,7 +72,7 @@ var models = {
           origRemoveFunc.call(signal, func);
           if (signal._bindings.length > 1) {
             // other listeners except server push -> do not unsubscribe
-            return done();
+            return isFunction(done) && done();
           }
           isFunction(done) && ch.onData.addOnce(done);
           ch.write('unsubscribe');
