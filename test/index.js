@@ -146,11 +146,19 @@ describe('model.io', function() {
           expect(puppy.name).to.be('Puppy');
           done();
         });
+        clientModels.Chihuahua.onBirth.addOnce(function(puppy) {
+          // FAIL
+          done(new Error('Event should only fire on class dog'));
+        });
         models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
       });
     });
     describe('fired clientside', function() {
       it('should be fired also server side', function(done) {
+        models.Chihuahua.onBirth.addOnce(function(polly) {
+          // FAIL
+          done(new Error('Event should only fire on class dog'));
+        });
         models.Dog.onBirth.addOnce(function(polly) {
           expect(polly).to.be.a(models.Dog);
           expect(polly.name).to.be('Polly');

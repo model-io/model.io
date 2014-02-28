@@ -84,6 +84,9 @@ models.Chihuahua = p(models.Dog, function($model, $super, $class, $superclass) {
   $model.bark = bark;
   $model.bark.type = serverIO.TYPE_PUBLIC;
   $model.init = init;
+
+  // overwrite signal so it is not triggered together with the one from $superclass
+  $class.onBirth = new Signal();
 });
 
 models.BlackChihuahua = p(models.Chihuahua, function() { });
