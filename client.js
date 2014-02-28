@@ -72,8 +72,6 @@ var models = {
       proxyCh.onData.addOnce(function(data) {
         done(data.err, instantiate(data.res));
       });
-      // TODO Check, whats inside `data` when calling a class proxy
-      // Maybe we should change handling here or build an own channel for class proxies
       proxyCh.write({data: this, args: args});
     }
   }
@@ -87,7 +85,6 @@ var models = {
         }
         //fall throught
       case 'array':
-        // TODO Test if this recusion really works - doubt it
         for(var key in thing) {
           thing[key] = instantiate(thing[key], instances);
         }
