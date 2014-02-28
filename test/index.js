@@ -1,3 +1,4 @@
+var async = require('async');
 var Browser = require('zombie');
 var expect = require('expect.js');
 var Signal = require('signals');
@@ -133,24 +134,41 @@ describe('model.io', function() {
     });
   });
 
-  describe('signals', function() {
+  describe('class signals', function() {
     describe('fired serverside', function() {
-      it('should be fired also client side', function(done) {
+      it.only('should be fired also client side', function(done) {
         // TODO Make this pass!`
         // this will fail due to unknown reasons. Maybe zombie js did not transfer protptypes correctly
         // expect(clientModels.Dog.onBirth).to.be.a(Signal);
         // instaed we compare prototypes here
         expect(clientModels.Dog.onBirth.prototype).to.not.be(null).and.to.equal(new Signal().prototype);
-        clientModels.Dog.onBirth.addOnce(function(puppy) {
-          expect(puppy).to.be.a(clientModels.Dog);
-          expect(puppy.name).to.be('Puppy');
+        async.parallel([
+          function(addDone) {
+            clientModels.Dog.onBirth.addOnce(function(puppy) {
+              expect(puppy).to.be.a(clientModels.Dog);
+              expect(puppy.name).to.be('Puppy');
+              done();
+            }, addDone);
+          }, function(addDone) {
+            clientModels.Chihuahua.onBirth.addOnce(function(puppy) {
+              // FAIL
+              done(new Error('Event should only fire on class dog'));
+            }, addDone);
+          }
+        ], function() {
+          models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
+        });
+      });
+
+      it('should transfer event data only if anyone is listening', function(done) {
+        clientModels.Dog.ch.sub('signal').sub('onBirth').onData.addOnce(function() {
+          done(new Error('Data should only be sended, if anyone is interested'));
+        });
+        models.Chihuahua.onBirth.addOnce(function(polly) {
           done();
         });
-        clientModels.Chihuahua.onBirth.addOnce(function(puppy) {
-          // FAIL
-          done(new Error('Event should only fire on class dog'));
-        });
         models.Dog.onBirth.dispatch(new models.Dog({name: 'Puppy'}));
+        models.Chihuahua.onBirth.dispatch(new models.Chihuahua({name: 'Puppy'}));
       });
     });
     describe('fired clientside', function() {

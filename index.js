@@ -116,19 +116,34 @@ function classSignals(model, modelName) {
     _.each(signals, function(signal, name) {
       var channel = modelCh.sub(modelName).sub('signal').sub(name);
       channel.onConnect.add(function(conn) {
+        conn.subscriptions = [];
         // attach server side events
         var write = function write() {
-          var args = Array.prototype.slice.call(arguments, 0);
-          conn.write(channel, args);
+          //check if connection is interested
+          if (_.contains(conn.subscriptions, channel.id)) {
+            var args = Array.prototype.slice.call(arguments, 0);
+            conn.write(channel, args);
+          }
         };
         signal.add(write);
         conn.onData.add(function(transportCh, data) {
           if (transportCh !== channel) {
             return;
           }
-          signal.remove(write);
-          signal.dispatch.apply(signal, instantiate(data));
-          signal.add(write);
+          switch (data) {
+            case 'subscribe':
+              conn.subscriptions.push(channel.id);
+              conn.write(channel, {subscribeSuccess: true});
+              break;
+            case 'unsubscribe':
+              conn.subscriptions = _.without(conn.subscriptions, channel.id);
+              conn.write(channel, {unsubscribeSuccess: true});
+              break;
+            default:
+              signal.remove(write);
+              signal.dispatch.apply(signal, instantiate(data));
+              signal.add(write);
+          }
         });
       });
     });

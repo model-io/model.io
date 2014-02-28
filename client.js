@@ -43,17 +43,56 @@ var models = {
       var signalCh = $class.ch.sub('signal');
       for(var i in options.classSignals) {
         var signal = new signals();
+        var origAddFunc = signal.add;
+        var origAddOnceFunc = signal.addOnce;
+        var origRemoveFunc = signal.remove;
+        var origRemoveAllFunc = signal.removeAll;
         var signalName = options.classSignals[i];
         var ch = signalCh.sub(signalName);
         var send = function() {
           var args = Array.prototype.slice.call(arguments, 0);
           ch.write(args);
         };
-        signal.add(send);
+
+        origAddFunc.call(signal, send);
+
+        signal.add = function(func, done) {
+          isFunction(done) && ch.onData.addOnce(done);
+          ch.write('subscribe');
+          origAddFunc.call(signal, func);
+        }
+
+        signal.addOnce = function(func, done) {
+          isFunction(done) && ch.onData.addOnce(done);
+          ch.write('subscribe');
+          origAddOnceFunc.call(signal, func);
+        }
+
+        signal.remove = function(func, done) {
+          origRemoveFunc.call(signal, func);
+          if (signal._bindings.length > 1) {
+            // other listeners except server push -> do not unsubscribe
+            return done();
+          }
+          isFunction(done) && ch.onData.addOnce(done);
+          ch.write('unsubscribe');
+        }
+
+        signal.removeAll = function(func, done) {
+          isFunction(done) && ch.onData.addOnce(done);
+          ch.write('unsubscribe');
+          origRemoveAllFunc.call(signal, func);
+          // readd server push
+          origAddFunc.call(signal, send);
+        }
+
         ch.onData.add(function(data) {
-          signal.remove(send);
+          if (data.subscribeSuccess || data.unsubscribeSuccess) {
+            return;
+          }
+          origRemoveFunc.call(signal, send);
           signal.dispatch.apply(signal, instantiate(data));
-          signal.add(send);
+          origAddFunc.call(signal, send);
         })
         $class[signalName] = signal;
       }
@@ -90,5 +129,9 @@ var models = {
         }
     }
     return thing;
+  }
+
+  function isFunction(func) {
+    return 'function' === typeof func;
   }
 })();
