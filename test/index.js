@@ -174,8 +174,39 @@ describe('model.io', function() {
             }, addDone);
           }
         ], function() {
-          models.Dog.onBirth.dispatch(true);
-          models.Chihuahua.onBirth.dispatch(true);
+          models.Dog.onBirth.dispatch();
+          models.Chihuahua.onBirth.dispatch();
+        });
+      });
+
+      it.only('should stop sending stuff if all subscribers have been detached', function(done) {
+        var unsubscribed = false;
+        async.parallel([
+          function(addDone) {
+            var checkUnsubscribe = clientModels.Chihuahua.ch.sub('signal').sub('onBirth').onData.add(
+            function(data) {
+              if (data.unsubscribeSuccess) {
+                unsubscribed = true;
+                checkUnsubscribe.detach();
+                done();
+              }
+            }, addDone);
+          }, function(addDone) {
+            var emptyFunc = function(){};
+            clientModels.Chihuahua.onBirth.add(emptyFunc, function() {
+              expect(unsubscribed).to.not.be.ok;
+              clientModels.Chihuahua.onBirth.remove(emptyFunc, addDone);
+            }, addDone);
+          }, function(addDone) {
+            // subscribe and instantly unsubscribe
+            var emptyFunc = function(){};
+            clientModels.Chihuahua.onBirth.add(emptyFunc, function() {
+              expect(unsubscribed).to.not.be.ok;
+              clientModels.Chihuahua.onBirth.remove(emptyFunc, addDone);
+            });
+          }
+        ], function() {
+          models.Chihuahua.onBirth.dispatch();
         });
       });
 
@@ -193,7 +224,7 @@ describe('model.io', function() {
             }, addDone);
           }
         ], function() {
-          models.Chihuahua.onBirth.dispatch(new models.Chihuahua({name: 'Puppy'}));
+          models.Chihuahua.onBirth.dispatch();
         });
       });
     });
