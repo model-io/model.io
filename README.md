@@ -9,9 +9,9 @@ client-server models with automatic syncronisation of code and data.
 What?
 -----
 
-Holding frontend and backend models in sync has always be difficult. In the first place we didn't have models in the fronend, than we have some but didn't talk the same language (javascript vs. X). Now with node we also solved this issue, but we still not have a perfect and lightweigt solution for this problem (at least none of which we know of). Sure, there is [derby.js](http://derbyjs.com/) and there is [meteor.js](https://www.meteor.com), but these are pretty opiniated frameworks, which force you to follow their patterns.
+Holding frontend and backend models in sync has always be difficult. In the first place we didn't have models in the frontend, than we have some but didn't talk the same language (javascript vs. X). Now with node we also solved this issue, but we still not have a perfect and lightweigt solution for this problem (at least none of which we know of). Sure, there is [derby.js](http://derbyjs.com/) and there is [meteor.js](https://www.meteor.com), but these are pretty opiniated frameworks, which force you to follow their patterns.
 
-model.io tries to be a thin layer between frontend and backend by only sharing models and data. This is done throught websockets bases on [sock.js](http://sockjs.org) and a small multi-channel-layer [shoe.js](https://github.com/model-io/shoe.js).
+model.io tries to be a thin layer between frontend and backend by only sharing models and data. This is done throught websockets bases on [sock.js](http://sockjs.org) and a small multi-channel-layer [sock-channels.js](https://github.com/model-io/sock-channels.js).
 
 State
 -----
