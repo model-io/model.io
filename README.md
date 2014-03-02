@@ -30,7 +30,7 @@ Whats already working:
   * **proxy**: method is available in front- and backend, but will be evaluated in backend and must therefore be asyncron. Request and result is transfered over websocket.
   * **private**: method is only available in backend
 * use uuid to track instances
-* pub/sub on collection events
+* pub/sub on class based signals
 
 Usage
 -----
