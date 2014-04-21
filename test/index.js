@@ -179,7 +179,7 @@ describe('model.io', function() {
         });
       });
 
-      it.only('should stop sending stuff if all subscribers have been detached', function(done) {
+      it('should stop sending stuff if all subscribers have been detached', function(done) {
         var unsubscribed = false;
         async.parallel([
           function(addDone) {
