@@ -1,12 +1,7 @@
 var _ = require('lodash');
-var http = require('http');
-var sockjs = require('sockjs');
 var Signal = require('signals');
-var Channel = require('sock-channels');
 
-var ws = sockjs.createServer();
-var baseCh = new Channel(ws, 'model.io');
-var modelCh = baseCh.sub('model');
+var modelCh
 var models;
 
 function pushModels(models) {
@@ -150,15 +145,10 @@ function classSignals(model, modelName) {
   }).keys().valueOf();
 }
 
-function ModelIOServer(app, _models) {
+function ModelIOServer(baseCh, _models) {
   var server;
+  modelCh = baseCh.sub('model');
   models = _models;
-  if (app.callback) {
-    server = http.Server(app.callback());
-  } else {
-    server = http.Server(app);
-  }
-  ws.installHandlers(server, {prefix:'/ws'});
   pushModels(_.map(models, function(Model, name) {
     Model.ch = modelCh.sub(name);
     return {

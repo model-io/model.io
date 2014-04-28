@@ -1,12 +1,18 @@
 var _ = require('lodash');
+var http = require('http');
 var async = require('async');
 var Browser = require('zombie');
 var expect = require('expect.js');
 var Signal = require('signals');
+var sockjs = require('sockjs');
+var Channel = require('sock-channels');
 
 var app = require('./server/app');
 var models = require('./server/models');
 var serverIO = require('../');
+
+var ws = sockjs.createServer();
+var baseCh = new Channel(ws, 'model.io');
 
 describe('model.io', function() {
   var browser;
@@ -14,7 +20,10 @@ describe('model.io', function() {
   var server;
 
   before(function(done) {
-    server = serverIO(app, models).listen(3000, function() {
+    serverIO(baseCh, models);
+    server = http.Server(app);
+    ws.installHandlers(server, {prefix:'/ws'});
+    server.listen(3000, function() {
       browser = new Browser();
       browser.visit('http://localhost:3000/', function() {
         clientModels = browser.window.models;
