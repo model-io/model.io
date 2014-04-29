@@ -117,6 +117,13 @@ var models = {
     }
   }
 
+  // recursivly instantiate all objects in given thing.
+  // This is done by looking on a _type property. If it corensponds
+  // to a existing model, it will be instantiated and the properties will be setted
+  // TODO Simply extenting the instance might be problematic, some libraries store
+  // instance data in seperate subproperty (e. G. _data). This could be solved by
+  // making this pluggable. Currently the fronend class thing is not plugable, so this
+  // might not be a problem.
   function instantiate(thing, instances) {
     instances = instances || {};
     switch(typeof(thing)) {
