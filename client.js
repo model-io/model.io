@@ -12,9 +12,7 @@ var models = {
   // Create basic channel to recive models
   var modelCh = baseCh.sub('model');
   modelCh.onData.addOnce(function(data) {
-    data.forEach(function(model) {
-      models._add(model);
-    });
+    data.forEach(models._add);
     models.onReady.dispatch(models);
   });
 
