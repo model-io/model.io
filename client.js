@@ -129,7 +129,8 @@ var models = {
     switch(typeof(thing)) {
       case 'object':
         if(thing._type && models[thing._type]) {
-          thing = instances[thing._id] = instances[thing._id] || _.extend(new models[thing._type](thing, thing._id), thing);
+          thing = instances[thing._id] = instances[thing._id]
+               || _.extend(new models[thing._type](thing, thing._id), thing);
         }
         //fall throught
       case 'array':
