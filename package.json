@@ -1,6 +1,6 @@
 {
   "name": "model.io",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "client-server models with automatic syncronisation",
   "main": "index.js",
   "scripts": {
